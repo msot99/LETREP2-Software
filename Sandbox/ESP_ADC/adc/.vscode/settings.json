@@ -1,0 +1,9 @@
+{
+  "C_Cpp.intelliSenseEngine": "Tag Parser",
+  "files.associations": {
+    "complex": "c",
+    "gpio.h": "c",
+    "stdio.h": "c",
+    "algorithm": "c"
+  }
+}
