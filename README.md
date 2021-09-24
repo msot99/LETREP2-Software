@@ -1,2 +1,9 @@
 # LETREP2-Software
-Software Package for the LETREP2 Senior Design Project
+This is the Software Package for the LETREP2 Senior Design Project.
+
+There are three subsystems:
+Primary MCU
+Secondary MCU
+Desktop Application
+
+
