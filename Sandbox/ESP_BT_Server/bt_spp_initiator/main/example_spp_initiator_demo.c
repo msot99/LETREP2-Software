@@ -46,7 +46,7 @@ static char peer_bdname[ESP_BT_GAP_MAX_BDNAME_LEN + 1];
 static const char remote_device_name[] = "EMG_SENSOR";
 static const esp_bt_inq_mode_t inq_mode = ESP_BT_INQ_MODE_GENERAL_INQUIRY;
 static const uint8_t inq_len = 30;
-static const uint8_t inq_num_rsps = 0;
+static const uint8_t inq_num_rsps = 1;
 
 #if (SPP_SHOW_MODE == SPP_SHOW_DATA)
 #define SPP_DATA_LEN 20
