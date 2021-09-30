@@ -1,4 +1,5 @@
 from tkinter import *
+import numpy as np
 
 class DynamicBar(Canvas):
 
@@ -14,6 +15,8 @@ class DynamicBar(Canvas):
     def set_data(self, data):
         pos = self.coords(self.bar)
         newy = self.height - (data - self.data_start) / (self.data_end - self.data_start) * self.height
+        if newy < 0:
+            newy = 0
         diff = newy - pos[1]
         self.move(self.bar, 0, diff)
 

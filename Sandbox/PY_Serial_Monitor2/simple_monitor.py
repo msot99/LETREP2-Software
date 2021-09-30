@@ -62,7 +62,7 @@ def animate(i, xs, ys):
 
 last_received = "Here we go"
 # Initialize communication with Serial
-COM = 'COM3'  # /dev/ttyACM0 (Linux)
+COM = 'COM15'  # /dev/ttyACM0 (Linux)
 BAUD = 500000
 fig = plt.figure()
 ax = fig.add_subplot(1, 1, 1)

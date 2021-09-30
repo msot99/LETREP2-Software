@@ -43,7 +43,7 @@ def clean_adc(input):
         return [0.0, 0.0]
 
 # can be "normal" or "rectified"
-read_mode = "normal"
+read_mode = "rectified"
 
 def get_reading():
     global rolling_avg
@@ -64,35 +64,40 @@ try:
     canvas.pack()
 
     MVC_time = 4    # seconds
+    toggle_MVC_enabled = False
     def on_MVC_click():
-        global measure_MVC
+        global toggle_MVC_enabled
         def fun():
-            measure_MVC["state"] = "disabled"
+            global toggle_MVC_enabled
+            toggle_MVC_enabled = True
             readings = []
             start = time.time()
             while time.time() < start + MVC_time:
                 readings.append(get_reading())
             canvas.data_end = np.mean(readings)
             print(canvas.data_end)
-            measure_MVC["state"] = "normal"
+            toggle_MVC_enabled = True
         Thread(target=fun, daemon=False).start()
     measure_MVC = Button(text="Measure MVC", command=on_MVC_click)
     measure_MVC.pack()
 
 
     last_received = "Here we go"
-    num_samples = 30
+    num_samples = 60
     rolling_avg = [0 for _ in range(num_samples)]
     # Initialize communication with Serial
-    COM = 'COM3'  # /dev/ttyACM0 (Linux)
+    COM = 'COM15'  # /dev/ttyACM0 (Linux)
     BAUD = 500000
     ser = serial.Serial(COM, BAUD, timeout=.1)
 
     thread = Thread(target=receiving, args=(ser,), daemon=False)
     thread.start()
     while True:
+        if toggle_MVC_enabled:
+            measure_MVC["state"] = "normal" if measure_MVC["state"] == "disabled" else "disabled"
+            toggle_MVC_enabled = False
         data = get_reading()
-        data = np.mean(rolling_avg)
+        # data = np.mean(rolling_avg)
         # print(data)
         canvas.set_data(data)
         root.update()
