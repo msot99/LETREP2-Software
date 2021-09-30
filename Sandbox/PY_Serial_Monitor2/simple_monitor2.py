@@ -1,14 +1,15 @@
+from tkinter import *
 
-from numpy.core.numeric import roll
+from matplotlib.pyplot import fill
+from DynamicBar import *
 import serial
-from time import sleep
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 from threading import Thread
-
+import numpy as np
+import time
 
 def receiving(ser):
     global last_received
+    global rolling_avg
 
     buffer_string = ''
     while True:
@@ -24,7 +25,10 @@ def receiving(ser):
             # If the Arduino sends lots of empty lines, you'll lose the
             # last filled line, so you could make the above statement conditional
             # like so: if lines[-2]: last_received = lines[-2]
+            rolling_avg.append(clean_adc(last_received)[0])
+            rolling_avg.pop(0)
             buffer_string = lines[-1]
+
 
 
 def clean_adc(input):
@@ -38,42 +42,32 @@ def clean_adc(input):
         return [0.0, 0.0]
 
 
-def animate(i, xs, ys):
-
-    # while(rl.s.in_waiting > 0):
-    reading = clean_adc(last_received)
-    # print(reading)
-
-    # xs.append(reading[1])
-    ys.append(reading[0])
-
-    # Limit x and y lists to 20 items
-    xs = xs[-50:]
-    ys = ys[-50:]
-
-    # Draw x and y lists
-    ax.clear()
-    ax.plot(xs, ys)
-
-    # Format plot
-    plt.title('ADC Readings')
-    plt.ylim([0, 3420])
-
-
-last_received = "Here we go"
-# Initialize communication with Serial
-COM = 'COM3'  # /dev/ttyACM0 (Linux)
-BAUD = 500000
-fig = plt.figure()
-ax = fig.add_subplot(1, 1, 1)
-xs = [i for i in range(0, 200)]
-ys = [i for i in range(0, 200)]
-ser = serial.Serial(COM, BAUD, timeout=.1)
-
-Thread(target=receiving, args=(ser,)).start()
 try:
-    ani = animation.FuncAnimation(fig, animate, fargs=(xs, ys), interval=1)
-    plt.show()
+    root = Tk()
+
+    width = 200
+    height = 500
+    canvas = DynamicBar(root, width=width, height=height, data_start=0, data_end=3412-2148)
+    # Max voltage = 3412
+    # DC Offset = 2148
+    canvas.pack()
+
+
+    last_received = "Here we go"
+    num_samples = 30
+    rolling_avg = [0 for _ in range(num_samples)]
+    # Initialize communication with Serial
+    COM = 'COM3'  # /dev/ttyACM0 (Linux)
+    BAUD = 500000
+    ser = serial.Serial(COM, BAUD, timeout=.1)
+
+    thread = Thread(target=receiving, args=(ser,), daemon=False)
+    thread.start()
+    while True:
+        data = np.mean(np.abs(rolling_avg - np.full(shape=num_samples, fill_value=2149)))
+        # data = np.mean(rolling_avg)
+        # print(data)
+        canvas.set_data(data)
+        root.update()
 finally:
     ser.close()
-    print("Good Exit")
