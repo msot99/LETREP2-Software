@@ -1,6 +1,7 @@
 from tkinter import *
 
 from matplotlib.pyplot import fill
+from numpy.testing._private.utils import measure
 from DynamicBar import *
 import serial
 from threading import Thread
@@ -41,16 +42,42 @@ def clean_adc(input):
     except (UnicodeDecodeError, ValueError) as e:
         return [0.0, 0.0]
 
+# can be "normal" or "rectified"
+read_mode = "normal"
+
+def get_reading():
+    global rolling_avg
+    global num_samples
+    if read_mode == "rectified":
+        return np.mean(np.abs(rolling_avg - np.full(shape=num_samples, fill_value=2149)))
+    elif read_mode == "normal":
+        return np.mean(rolling_avg)
 
 try:
     root = Tk()
 
     width = 200
     height = 500
-    canvas = DynamicBar(root, width=width, height=height, data_start=0, data_end=3412-2148)
+    canvas = DynamicBar(root, width=width, height=height, data_start=0, data_end=3412-2148 if read_mode == "rectified" else 3412)
     # Max voltage = 3412
     # DC Offset = 2148
     canvas.pack()
+
+    MVC_time = 4    # seconds
+    def on_MVC_click():
+        global measure_MVC
+        def fun():
+            measure_MVC["state"] = "disabled"
+            readings = []
+            start = time.time()
+            while time.time() < start + MVC_time:
+                readings.append(get_reading())
+            canvas.data_end = np.mean(readings)
+            print(canvas.data_end)
+            measure_MVC["state"] = "normal"
+        Thread(target=fun, daemon=False).start()
+    measure_MVC = Button(text="Measure MVC", command=on_MVC_click)
+    measure_MVC.pack()
 
 
     last_received = "Here we go"
@@ -64,8 +91,8 @@ try:
     thread = Thread(target=receiving, args=(ser,), daemon=False)
     thread.start()
     while True:
-        data = np.mean(np.abs(rolling_avg - np.full(shape=num_samples, fill_value=2149)))
-        # data = np.mean(rolling_avg)
+        data = get_reading()
+        data = np.mean(rolling_avg)
         # print(data)
         canvas.set_data(data)
         root.update()
