@@ -13,6 +13,8 @@ def receiving(ser):
     global rolling_avg
 
     buffer_string = ''
+    delay = 1.0/60
+    last = time.time()
     while True:
         # print("a")
         try:
@@ -29,6 +31,9 @@ def receiving(ser):
             rolling_avg.append(clean_adc(last_received)[0])
             rolling_avg.pop(0)
             buffer_string = lines[-1]
+            while time.time() < last + delay:
+                pass
+            last += delay
 
 
 
@@ -83,10 +88,10 @@ try:
 
 
     last_received = "Here we go"
-    num_samples = 60
+    num_samples = 20
     rolling_avg = [0 for _ in range(num_samples)]
     # Initialize communication with Serial
-    COM = 'COM15'  # /dev/ttyACM0 (Linux)
+    COM = 'COM3'  # /dev/ttyACM0 (Linux)
     BAUD = 500000
     ser = serial.Serial(COM, BAUD, timeout=.1)
 
