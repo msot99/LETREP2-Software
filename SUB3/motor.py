@@ -1,17 +1,20 @@
-import serial
+# import serial
+import time
 from time import sleep
-import threading
+from threading import Thread
+import random
 BAUD = 115200
 
 class motor:
     def __init__(self, com, max, min):
         self.com = com
-        self.ser = serial.Serial(com, BAUD, timeout=.1)
+        # self.ser = serial.Serial(com, BAUD, timeout=.1)
         self.preload_max = max
         self.preload_min = min
         self.torque_update = False
-        self.torque = 0
+        self.torque_value = 0
         self.torque_thread = None
+        self.read_torque = False
 
     def enable(self):
         self.ser.write("a".encode())
@@ -19,7 +22,14 @@ class motor:
     
 
     def torque(self):
-        print("A")
+        start = time.time()
+        while self.read_torque:
+            self.torque_value = self.preload_min + (self.preload_max - self.preload_min) * random.random()
+            self.torque_update = True
+            print(self.torque_value)
+            sleep(random.randint(2, 3))
+            # if time.time() > start + 5:
+            #     break
         # print(self.read_torque)
         # while(self.read_torque):
         #     data_from_ser = self.ser.readline().decode()
@@ -39,11 +49,10 @@ class motor:
     def start_torque_readings(self):
         self.read_torque = True
     
-        torque_thread = threading.Thread(target=self.torque)
-        sleep(1)
+        self.torque_thread = Thread(target=self.torque)
         # print(self.torque_thread.is_alive())
-        torque_thread.start()
-        print(torque_thread.is_alive())
+        self.torque_thread.start()
+        print(self.torque_thread.is_alive())
    
 
 
@@ -55,10 +64,9 @@ class motor:
 
 def main():
     mot = motor("COM15", .51,.53)
-    mot.enable()
+    # mot.enable()
     mot.start_torque_readings() 
-    sleep(10)
-    mot.stop()
+    # mot.stop()
 
 
 

@@ -1,10 +1,22 @@
 from tkinter import *
 import random
+from PreloadDisplay import PreloadDisplay
 from global_funcs import *
+from motor import *
 
 def show_app(port, pat_id, sess):
     root = Tk()
     root.configure(bg="white")
+
+    preload_max = 0.53
+    preload_min = 0.51
+    mot = motor(port, preload_max, preload_min)
+    mot.start_torque_readings()
+
+    def on_closing():
+        mot.read_torque = False
+        root.destroy()
+    root.protocol("WM_DELETE_WINDOW", on_closing)
 
     label = Label(root, text=port + " " + str(pat_id) + " " + str(sess))
     label.configure(bg="white")
@@ -32,6 +44,10 @@ def show_app(port, pat_id, sess):
                 failure_count += 1
         success_lbl.configure(text="Successes: " + str(success_count))
         failure_lbl.configure(text="Failures: " + str(failure_count))
+    
+    def update_torque():
+        global torque_lbl
+        torque_lbl.configure(text="Torque: " + format(torque_value, ".4f"))
 
     def on_start():
         global success_record
@@ -58,20 +74,36 @@ def show_app(port, pat_id, sess):
 
     trash_btn = Button(root, text="Trash Prev\nResult", command=trash_prev, width=big_w, height=big_h,
             bg="blue", font=button_font, fg=button_font_color)
-    trash_btn.grid(row=4, column=3, padx=padx, pady=pady)
+    trash_btn.grid(row=4, column=2, padx=padx, pady=pady)
 
     global success_lbl
     global failure_lbl
+    global torque_lbl
     success_lbl = Label(root)
     success_lbl.configure(bg="white")
     success_lbl.grid(row=3, column=0)
     failure_lbl = Label(root)
     failure_lbl.configure(bg="white")
     failure_lbl.grid(row=3, column=1)
+    torque_lbl = Label(root)
+    torque_lbl.configure(bg="white")
+    torque_lbl.grid(row=3, column=2)
     update_successes()
 
+    preload_display = PreloadDisplay(root, 200, 400, preload_max, preload_min)
+    preload_display.grid(row=4, column=0)
+    preload_display.configure(bg="white")
+
     root.geometry("800x500")
-    root.mainloop()
+    center_window(root)
+    torque_value = 0
+    while 1:
+        if mot.torque_update:
+            torque_value = mot.torque_value
+            mot.torque_update = False
+            update_torque()
+        
+        root.update()
 
 
 if __name__ == "__main__":
