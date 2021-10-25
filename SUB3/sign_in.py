@@ -5,7 +5,7 @@ from global_funcs import *
 from app import show_app
 
 def sign_in(port):
-    print("Using PORT %s", port)
+    print("Using PORT %s" % port)
     root = Tk()
     root.configure(bg="white")
 
