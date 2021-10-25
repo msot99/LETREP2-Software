@@ -11,10 +11,10 @@ def show_app(port, pat_id, sess):
     preload_max = 0.53
     preload_min = 0.51
     mot = motor(port, preload_max, preload_min)
-    mot.start_torque_readings()
+    mot.start()
 
     def on_closing():
-        mot.read_torque = False
+        mot.exit()
         root.destroy()
     root.protocol("WM_DELETE_WINDOW", on_closing)
 
@@ -57,6 +57,9 @@ def show_app(port, pat_id, sess):
             success_record.append(False)
         update_successes()
     
+    def on_pause():
+        mot.play_pause()
+
     def trash_prev():
         global success_record
         success_record = success_record[0:-1]
@@ -68,7 +71,7 @@ def show_app(port, pat_id, sess):
             bg="green", font=button_font, fg=button_font_color)
     start_btn.grid(row=4, column=0, padx=padx, pady=pady)
 
-    pause_btn = Button(root, text="Pause", width=big_w, height=big_h,
+    pause_btn = Button(root, text="Pause", command=on_pause, width=big_w, height=big_h,
             bg="red", font=button_font, fg=button_font_color)
     pause_btn.grid(row=4, column=1, padx=padx, pady=pady)
 
@@ -107,4 +110,4 @@ def show_app(port, pat_id, sess):
 
 
 if __name__ == "__main__":
-    show_app("COM1", 1234, 1)
+    show_app("COM15", 1234, 1)
