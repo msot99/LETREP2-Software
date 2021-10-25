@@ -1,14 +1,15 @@
+import clr
+clr.AddReference(
+    "C:/Users/jesse/Desktop/LETREP2-Software/SUB3/resources/DelsysAPI")
+clr.AddReference("System.Collections")
+from System import Int32
+from System.Collections.Generic import List
+from Aero import AeroPy
 from collections import deque
 import threading
 from DataManager import DataKernel
-import clr
-from time import sleep
-clr.AddReference("/resources/DelsysAPI")
-clr.AddReference("System.Collections")
 
-from Aero import AeroPy
-from System.Collections.Generic import List
-from System import Int32
+from time import sleep
 
 key = "MIIBKjCB4wYHKoZIzj0CATCB1wIBATAsBgcqhkjOPQEBAiEA/////wAAAAEAAAAAAAAAAAAAAAD///////////////8wWwQg/////wAAAAEAAAAAAAAAAAAAAAD///////////////wEIFrGNdiqOpPns+u9VXaYhrxlHQawzFOw9jvOPD4n0mBLAxUAxJ02CIbnBJNqZnjhE50mt4GffpAEIQNrF9Hy4SxCR/i85uVjpEDydwN9gS3rM6D0oTlF2JjClgIhAP////8AAAAA//////////+85vqtpxeehPO5ysL8YyVRAgEBA0IABKtktl6PHswln5DTRdPbDJtbDN+KTpbIjfcmBQeGmBRqq/61zfuFgaRVuOTNbPm4rDTHnbap/KzNttIofOzAOLs="
 license = "<License>"\
@@ -39,83 +40,94 @@ class TrignoBase():
 class emg:
     def __init__(self, array):
         self.array_to_store = array
-        self.packetCount = 0
-        self.pauseFlag = False
-        self.numSamples = 10000
+        self.temp_emg_storage = []
+
+        self._emg_collect = False
+        self._cont_emg = False
+        self.emg_data_collected = False
+        self._start_collect = False
+
         base = TrignoBase()
         self.TrigBase = base.BaseInstance
-        self.DataHandler = DataKernel(self.TrigBase)
-    
-    def Connect(self):
-        """Callback to connect to the base"""
         self.TrigBase.ValidateBase(key, license, "RF")
 
+        #scan for any available sensors
+        self.TrigBase.ScanSensors().Result
+        self.SensorsFound = len(self.TrigBase.ListSensorNames())
+        self.TrigBase.ConnectSensors()
 
-    def streaming(self):
-        """This is the data processing thread"""
-        self.emg_queue = deque()
-        
-        
-        while self.pauseFlag is False:
-            dataReady = self.TrigBase.CheckDataQueue()
-            if dataReady:
-                DataOut = self.TrigBase.PollData()
-                
-                self.array_to_store.extend([abs(i) for i in DataOut[0][0] if abs(i)<3])
-
-        print(self.DataHandler.getPacketCount())
-
-    def Start(self):
-        """Callback to start the data stream from Sensors"""
-
-        self.pauseFlag = False
+       # start the data stream from Sensors
         newTransform = self.TrigBase.CreateTransform("raw")
-        index = List[Int32]()
+        self.index = List[Int32]()
 
         self.TrigBase.ClearSensorList()
 
         for i in range(self.SensorsFound):
             selectedSensor = self.TrigBase.GetSensorObject(i)
             self.TrigBase.AddSensortoList(selectedSensor)
-            index.Add(i)
+            self.index.Add(i)
 
-        self.sampleRates = [[] for i in range(self.SensorsFound)]
+        self.TrigBase.StreamData(self.index, newTransform, 2)
 
-        self.TrigBase.StreamData(index, newTransform, 2)
-        
-        
         self.threadManager()
+    def emg_trig_collect(self):
+        self._emg_collect = True
 
-    def Stop(self):
+    def start_cont_collect(self):
+        self._cont_emg = True
+
+    def _read_emg(self,temp_array):
+        dataReady = self.TrigBase.CheckDataQueue()
+        if dataReady:
+            DataOut = self.TrigBase.PollData()
+            # print(list(DataOut))
+            temp_array.extend([abs(sample)
+                                    for sample in list(DataOut)[0][0]])
+
+    def streaming(self):
+        """This is the data processing thread"""
+        while(self._emg_collect):
+
+            if self._cont_emg:
+                self._read_emg(self.array_to_store)
+                self.emg_data_collected = True
+            
+            elif self._emg_collect:
+
+                while(len(self.array_to_store)<2000):
+                    sleep(.01)
+                    self._read_emg(self.array_to_store)
+
+                self._emg_collect = False
+            else:
+                dead_array = []
+                self._read_emg(dead_array)
+
+    def stop(self):
         """Callback to stop the data stream"""
         self.TrigBase.StopData()
-        self.pauseFlag = True
+        self._emg_collect = False
+        if hasattr(self, "t1"):
+            self.t1.join()
 
-    def Scan(self):
-        """Callback to tell the base to scan for any available sensors"""
-        f = self.TrigBase.ScanSensors().Result
-        self.nameList = self.TrigBase.ListSensorNames()
-        self.SensorsFound = len(self.nameList)
-
-        self.TrigBase.ConnectSensors()
-        return self.nameList
-    
     def threadManager(self):
         """Handles the threads for the DataCollector gui"""
-        self.emg_plot = deque()
+        self._emg_collect = True
 
-        t1 = threading.Thread(target=self.streaming)
+        self.t1 = threading.Thread(target=self.streaming)
 
-        t1.start()
+        self.t1.start()
 
 def main():
-    emg_obj = emg()
-    emg_obj.Connect()
-    emg_obj.Scan()
-    emg_obj.Start()
-    
-
-
+    arr = []
+    emg_obj = emg(arr)
+    input()
+    print("TrigCollect")
+    # emg_obj.start_cont_collect()
+    emg_obj.emg_trig_collect()
+    input()
+    emg_obj.stop()
+    print(arr)
 
 if __name__ == "__main__":
     main()
