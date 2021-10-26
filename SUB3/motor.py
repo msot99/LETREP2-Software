@@ -5,8 +5,8 @@ from threading import Thread
 import random
 
 # Constants
-MIN_PRELOAD_LENGTH = 2
-MAX_PRELOAD_LENGTH = 8
+MAX_PRELOAD_LENGTH = 3.0
+PRELOAD_DEBOUCE_TIME = .5
 BAUD = 115200
 
 class motor:
@@ -29,7 +29,7 @@ class motor:
 
         # Flags for controlling motor
         self._fire_motor_flag = True
-        self._pause_fire = True
+        self.pause_fire = True
 
     def _enable(self):
         """
@@ -61,7 +61,7 @@ class motor:
     
     def _read_msgs_from_esp(self):
         """
-        processes the next command and updates the torque value
+        Processes the next command and updates the torque value
         """
         while(self._read_msgs_flag):
             data_from_ser = self.ser.readline().decode().strip()
@@ -70,34 +70,44 @@ class motor:
                 self.torque_update = True
                 
             if data_from_ser == "enabled":
-                sleep(2)
-                self._pause_fire = False
+                sleep(5)
+                self.pause_fire = False
 
     def _fire_motor_on_torque(self):
         """
-        handles when the system fires the motor 
+        Handles when the system fires the motor 
         """
         while(self._fire_motor_flag):
             sleep(.1)
-            if self._preload_min < self.torque_value and self._preload_max > self.torque_value and not self._pause_fire:
+            if self._preload_min < self.torque_value and self._preload_max > self.torque_value and not self.pause_fire:
                 # Variables for tracking how long to wait before firing
                 good_torque_start_time = time.time()
-                time_needed_to_fire = random.randint(
-                    MIN_PRELOAD_LENGTH, MAX_PRELOAD_LENGTH)
+                time_needed_to_fire = 2.0 + random.random() * MAX_PRELOAD_LENGTH
                 print("GOOD TORQUE! Waiting %d seconds before fire" % time_needed_to_fire)
                 while(True):
                     sleep(.1)
                     #  Check to see if we are in paused mode,
                     # If so do not fire torque
-                    if self._pause_fire:
+                    if self.pause_fire:
                         print("Paused-leaving preload for fire")
                         break
 
-                    # Check to see if patient is maintainging torque window
+                    # Check to see if patient is maintaining torque window
                     if not(self._preload_min < self.torque_value and self._preload_max > self.torque_value):
-                        print("PRELOAD_FAILURE")
+                        
+                        if self._preload_min > self.torque_value:
+                            if time.time() - good_torque_start_time > PRELOAD_DEBOUCE_TIME:
+                                print("PRELOAD_FAILURE LOW")
+                                break
+                        else:
+                            if time.time() - good_torque_start_time > PRELOAD_DEBOUCE_TIME:
+                                
+                                print("PRELOAD_FAILURE HIGH")
+                                break
                         # TODO Add communication for preload failure
-                        break
+                        if time.time() - good_torque_start_time < PRELOAD_DEBOUCE_TIME:
+                            print("Failed Preload, but in debounce")
+                        
 
                     # Fire the motor after specified period
                     if time.time() - good_torque_start_time > time_needed_to_fire:
@@ -106,6 +116,7 @@ class motor:
                         self._fire()
                         sleep(.5)
                         self._release()
+                        #TODO Add time for 10 second stuff
                         sleep(1)
                         break
         
@@ -113,7 +124,7 @@ class motor:
 
     def start(self):
         """
-        starts the system's threads and enables the motor
+        Starts the system's threads and enables the motor
         """
         self._start_threads()
         sleep(.1)
@@ -124,12 +135,12 @@ class motor:
         """"
         Pauses the motor firing ability until turned back on
         """
-        self._pause_fire = not self._pause_fire
+        self.pause_fire = not self.pause_fire
         
 
     def exit(self):
         """
-        closes serial stops all threads and disables the motor
+        Closes serial stops all threads and disables the motor
         """
         # Turn off motor
         self._disable()

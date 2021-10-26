@@ -1,4 +1,5 @@
 from tkinter import *
+import time
 import random
 from PreloadDisplay import PreloadDisplay
 from global_funcs import *
@@ -71,6 +72,9 @@ def show_app(port, pat_id, sess):
             bg="green", font=button_font, fg=button_font_color)
     start_btn.grid(row=4, column=0, padx=padx, pady=pady)
 
+    pause_btn_color_swap = True
+    swap_time = 0
+    PAUSE_BLINK_RATE = .5
     pause_btn = Button(root, text="Pause", command=on_pause, width=big_w, height=big_h,
             bg="red", font=button_font, fg=button_font_color)
     pause_btn.grid(row=4, column=1, padx=padx, pady=pady)
@@ -106,6 +110,21 @@ def show_app(port, pat_id, sess):
             mot.torque_update = False
             update_torque()
         
+        if mot.pause_fire:
+
+            if pause_btn_color_swap and time.time()- swap_time> PAUSE_BLINK_RATE:
+                pause_btn_color_swap = not pause_btn_color_swap
+                pause_btn.configure(bg="red")
+                swap_time = time.time()
+
+            elif not pause_btn_color_swap and time.time() - swap_time > PAUSE_BLINK_RATE:
+                pause_btn_color_swap = not pause_btn_color_swap
+                pause_btn.configure(bg="green")
+                swap_time = time.time()
+        else:
+            pause_btn.configure(bg="red")
+                
+
         root.update()
 
 

@@ -1,13 +1,14 @@
+import matplotlib.pyplot as plt
+import threading
 import clr
 clr.AddReference(
-    "C:/Users/jesse/Desktop/LETREP2-Software/SUB3/resources/DelsysAPI")
+    "resources/DelsysAPI")
 clr.AddReference("System.Collections")
 from System import Int32
 from System.Collections.Generic import List
 from Aero import AeroPy
 from collections import deque
-import threading
-from DataManager import DataKernel
+
 
 from time import sleep
 
@@ -70,6 +71,8 @@ class emg:
         self.TrigBase.StreamData(self.index, newTransform, 2)
 
         self.threadManager()
+    
+    
     def emg_trig_collect(self):
         self._emg_collect = True
 
@@ -82,7 +85,7 @@ class emg:
             DataOut = self.TrigBase.PollData()
             # print(list(DataOut))
             temp_array.extend([abs(sample)
-                                    for sample in list(DataOut)[0][0]])
+                                    for sample in list(DataOut)[0][0] if abs(sample) < 4])
 
     def streaming(self):
         """This is the data processing thread"""
@@ -92,13 +95,13 @@ class emg:
                 self._read_emg(self.array_to_store)
                 self.emg_data_collected = True
             
-            elif self._emg_collect:
+            elif self._start_collect:
 
                 while(len(self.array_to_store)<2000):
                     sleep(.01)
                     self._read_emg(self.array_to_store)
 
-                self._emg_collect = False
+                self._start_collect = False
             else:
                 dead_array = []
                 self._read_emg(dead_array)
@@ -122,12 +125,34 @@ def main():
     arr = []
     emg_obj = emg(arr)
     input()
+
     print("TrigCollect")
     # emg_obj.start_cont_collect()
     emg_obj.emg_trig_collect()
     input()
+    
     emg_obj.stop()
-    print(arr)
+    xs = [i for i in range(0, 5001)]
+
+
+    ys = [i for i in range(0, 200)]
+    ys = arr
+    # n = 20
+    # list1 = [sum(ys[i:i+n])/n for i in range(0,len(ys),n)]
+
+    xs = xs[-1*len(ys):]
+
+    # Draw x and y lists
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+    ax.clear()
+    ax.plot(xs, ys)
+
+    # Format plot
+    plt.title('EMG Readings')
+    plt.ylim([0, 
+    3])
+    plt.show()
 
 if __name__ == "__main__":
     main()
