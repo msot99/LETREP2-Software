@@ -13,7 +13,7 @@
     "trials": {
       "trial1": {
         "success": "true",
-        "failure-Reason": "none",
+        "failure-reason": "none",
         "peakvalue": 4,
         "emgdata": [
           1, 2, 4, 5, 2, 2, 4, 5, 3, 2, 4, 4, 5, 2, 2, 4, 5, 5, 3, 2, 4, 4, 5,
@@ -23,7 +23,7 @@
       },
       "trial2": {
         "success": "false",
-        "failure-Reason": "prelow",
+        "failure-reason": "prelow",
         "peakvalue": 4,
         "emgdata": [
           1, 2, 4, 5, 2, 2, 4, 5, 3, 2, 4, 4, 5, 2, 2, 4, 5, 5, 3, 2, 4, 4, 5,
@@ -33,7 +33,7 @@
       },
       "trial3": {
         "success": "false",
-        "failure-Reason": "prehigh",
+        "failure-reason": "prehigh",
         "peakvalue": 4,
         "emgdata": [
           1, 2, 4, 5, 2, 2, 4, 5, 3, 2, 4, 4, 5, 2, 2, 4, 5, 5, 3, 2, 4, 4, 5,
@@ -43,7 +43,7 @@
       },
       "trial4": {
         "success": "false",
-        "failure-Reason": "mwave",
+        "failure-reason": "mwave",
         "peakvalue": 4,
         "emgdata": [
           1, 2, 4, 5, 2, 2, 4, 5, 3, 2, 4, 4, 5, 2, 2, 4, 5, 5, 3, 2, 4, 4, 5,
@@ -53,7 +53,7 @@
       },
       "trial5": {
         "success": "true",
-        "failure-Reason": "none",
+        "failure-reason": "none",
         "peakvalue": 4,
         "emgdata": [
           1, 2, 4, 5, 2, 2, 4, 5, 3, 2, 4, 4, 5, 2, 2, 4, 5, 5, 3, 2, 4, 4, 5,
@@ -63,7 +63,7 @@
       },
       "trial6": {
         "success": "true",
-        "failure-Reason": "none",
+        "failure-reason": "none",
         "peakvalue": 4,
         "emgdata": [
           1, 2, 4, 5, 2, 2, 4, 5, 3, 2, 4, 4, 5, 2, 2, 4, 5, 5, 3, 2, 4, 4, 5,
@@ -73,7 +73,7 @@
       },
       "trial7": {
         "success": "true",
-        "failure-Reason": "none",
+        "failure-reason": "none",
         "peakvalue": 4,
         "emgdata": [
           1, 2, 4, 5, 2, 2, 4, 5, 3, 2, 4, 4, 5, 2, 2, 4, 5, 5, 3, 2, 4, 4, 5,
@@ -83,7 +83,7 @@
       },
       "trial8": {
         "success": "true",
-        "failure-Reason": "none",
+        "failure-reason": "none",
         "peakvalue": 4,
         "emgdata": [
           1, 2, 4, 5, 2, 2, 4, 5, 3, 2, 4, 4, 5, 2, 2, 4, 5, 5, 3, 2, 4, 4, 5,
@@ -93,7 +93,7 @@
       },
       "trial9": {
         "success": "true",
-        "failure-Reason": "none",
+        "failure-reason": "none",
         "peakvalue": 4,
         "emgdata": [
           1, 2, 4, 5, 2, 2, 4, 5, 3, 2, 4, 4, 5, 2, 2, 4, 5, 5, 3, 2, 4, 4, 5,
@@ -103,7 +103,7 @@
       },
       "trial10": {
         "success": "true",
-        "failure-Reason": "none",
+        "failure-reason": "none",
         "peakvalue": 4,
         "emgdata": [
           1, 2, 4, 5, 2, 2, 4, 5, 3, 2, 4, 4, 5, 2, 2, 4, 5, 5, 3, 2, 4, 4, 5,
@@ -113,7 +113,7 @@
       },
       "trial11": {
         "success": "true",
-        "failure-Reason": "none",
+        "failure-reason": "none",
         "peakvalue": 4,
         "emgdata": [
           1, 2, 4, 5, 2, 2, 4, 5, 3, 2, 4, 4, 5, 2, 2, 4, 5, 5, 3, 2, 4, 4, 5,
@@ -123,7 +123,7 @@
       },
       "trial12": {
         "success": "true",
-        "failure-Reason": "none",
+        "failure-reason": "none",
         "peakvalue": 4,
         "emgdata": [
           1, 2, 4, 5, 2, 2, 4, 5, 3, 2, 4, 4, 5, 2, 2, 4, 5, 5, 3, 2, 4, 4, 5,
@@ -133,7 +133,7 @@
       },
       "trial13": {
         "success": "true",
-        "failure-Reason": "none",
+        "failure-reason": "none",
         "peakvalue": 4,
         "emgdata": [
           1, 2, 4, 5, 2, 2, 4, 5, 3, 2, 4, 4, 5, 2, 2, 4, 5, 5, 3, 2, 4, 4, 5,
@@ -143,7 +143,7 @@
       },
       "trial14": {
         "success": "true",
-        "failure-Reason": "none",
+        "failure-reason": "none",
         "peakvalue": 4,
         "emgdata": [
           1, 2, 4, 5, 2, 2, 4, 5, 3, 2, 4, 4, 5, 2, 2, 4, 5, 5, 3, 2, 4, 4, 5,
@@ -153,7 +153,7 @@
       },
       "trial15": {
         "success": "true",
-        "failure-Reason": "none",
+        "failure-reason": "none",
         "peakvalue": 4,
         "emgdata": [
           1, 2, 4, 5, 2, 2, 4, 5, 3, 2, 4, 4, 5, 2, 2, 4, 5, 5, 3, 2, 4, 4, 5,
@@ -163,7 +163,7 @@
       },
       "trial16": {
         "success": "true",
-        "failure-Reason": "none",
+        "failure-reason": "none",
         "peakvalue": 4,
         "emgdata": [
           1, 2, 4, 5, 2, 2, 4, 5, 3, 2, 4, 4, 5, 2, 2, 4, 5, 5, 3, 2, 4, 4, 5,
@@ -173,7 +173,7 @@
       },
       "trial17": {
         "success": "true",
-        "failure-Reason": "none",
+        "failure-reason": "none",
         "peakvalue": 4,
         "emgdata": [
           1, 2, 4, 5, 2, 2, 4, 5, 3, 2, 4, 4, 5, 2, 2, 4, 5, 5, 3, 2, 4, 4, 5,
@@ -183,7 +183,7 @@
       },
       "trial18": {
         "success": "true",
-        "failure-Reason": "none",
+        "failure-reason": "none",
         "peakvalue": 4,
         "emgdata": [
           1, 2, 4, 5, 2, 2, 4, 5, 3, 2, 4, 4, 5, 2, 2, 4, 5, 5, 3, 2, 4, 4, 5,
@@ -193,7 +193,7 @@
       },
       "trial19": {
         "success": "true",
-        "failure-Reason": "none",
+        "failure-reason": "none",
         "peakvalue": 4,
         "emgdata": [
           1, 2, 4, 5, 2, 2, 4, 5, 3, 2, 4, 4, 5, 2, 2, 4, 5, 5, 3, 2, 4, 4, 5,
@@ -203,7 +203,7 @@
       },
       "trial20": {
         "success": "true",
-        "failure-Reason": "none",
+        "failure-reason": "none",
         "peakvalue": 4,
         "emgdata": [
           1, 2, 4, 5, 2, 2, 4, 5, 3, 2, 4, 4, 5, 2, 2, 4, 5, 5, 3, 2, 4, 4, 5,
@@ -213,7 +213,7 @@
       },
       "trial21": {
         "success": "true",
-        "failure-Reason": "none",
+        "failure-reason": "none",
         "peakvalue": 4,
         "emgdata": [
           1, 2, 4, 5, 2, 2, 4, 5, 3, 2, 4, 4, 5, 2, 2, 4, 5, 5, 3, 2, 4, 4, 5,
