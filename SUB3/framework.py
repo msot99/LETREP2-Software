@@ -1,4 +1,5 @@
 
+import threading
 from time import sleep, time
 from random import random
 from tkinter.constants import X
@@ -11,9 +12,9 @@ from emg import emg
 
 
 class framework():
-    def __init__(self, COM, patID=1234, sess = 1, blocknum = 1):
-        self.preload_max = .53
-        self.preload_min = .51
+    def __init__(self, COM, patID=1234, sess=1, blocknum=1, premin=.51, premax=.53):
+        self.preload_max = premax
+        self.preload_min = premin
 
         self.block = block(patID, sess=sess, blocknum=blocknum)
 
@@ -22,48 +23,28 @@ class framework():
         # Give motor time to enable
         sleep(10)
         print("DONE Enabling motor")
-
         self.emg = emg()
+        self.running = False
+        self.show_emg = False
 
+    def exit(self):
+        self.mot.exit()
+        self.emg.exit()
 
-    def fire(self,failure,trial_start_time):
-        #TODO Add emg capture
+    def fire(self, failure, trial_start_time):
+        # TODO Add emg capture
         array = []
-        self.emg.emg_trig_collection(array, 2000)
-        print("FIRE! ",time()-trial_start_time,"  Failure:", failure)
-        
-
-        
-        self.mot.fire()
-        sleep(1)
-        fig = plt.figure()
-        ax = fig.add_subplot(1, 1, 1)
-        ax.clear()
-        
-        # array = array[-500:]
-        n = 3
-        array = [avg for avg in [
-            sum(array[i:i+n])/n for i in range(0, len(array), n)] for j in range(n)]
-        xs = [i for i in range(0, 5001)]
-        xs = xs[0:1*len(array)]
-        
-        print(len(xs), len(array))
-        ax.plot(xs,array)
-
-        # Format plot
-        plt.title('EMG Readings')
-        plt.ylim([0,.4])
-        plt.ion()
-        plt.show()
-        
-        sleep(1)
-        self.mot.release()
-        plt.pause(5)
-        plt.close()
         self.current_trial.emg_data = array
+        self.emg.emg_trig_collection(array, 2000)
+        print("FIRE! ", time()-trial_start_time, "  Failure:", failure)
 
-
-
+        self.mot.fire()
+        sleep(2)
+        n = 5
+        array = [avg for avg in [
+                sum(array[i:i+n])/n for i in range(0, len(array), n)] for j in range(n)]
+        self.show_emg = True
+        self.mot.release()
 
     def preload_failure_handler(self, trial_start_time):
         """
@@ -100,7 +81,7 @@ class framework():
 
     def preload_randomizer(self, trial_start_time):
         random_fire_time = time() + (5+trial_start_time-time()) * random()
-        print("Random Fire Time:",random_fire_time-time())
+        print("Random Fire Time:", random_fire_time-time())
         while(1):
             sleep(.1)
             # Check if preload amount is good
@@ -126,8 +107,8 @@ class framework():
                     else:
                         return self.preload_randomizer(trial_start_time)
 
-    def start_trial(self):
-        if block:
+    def take_trial(self):
+        if self.block:
             print("Starting Trial")
             self.current_trial = trial()
             trial_start_time = time()
@@ -140,25 +121,40 @@ class framework():
                 sleep(.1)
                 if time()-trial_start_time > 1.25:
                     break
-                if  self.mot.torque_preload_check() != 0:
+                if self.mot.torque_preload_check() != 0:
                     print(self.mot.torque_preload_check())
                     failure = self.preload_failure_handler(trial_start_time)
                     break
-            
+
             # Randomizer
             if not failure:
                 failure = self.preload_randomizer(trial_start_time)
-            
 
-            self.fire(failure, trial_start_time)
+            if self.running:
+                self.fire(failure, trial_start_time)
+            else:
+                return
 
+            self.block.trials.append(self.current_trial)
             while(time()-trial_start_time < 10):
                 sleep(.1)
-            
 
-
-    def new_block():
+    def new_block(self):
         self.block = self.block.copy_block()
+
+    def stop(self):
+        self.running = False
+
+    def start(self):
+        self.running = True
+        self.trial_thread = threading.Thread(
+            target=self._data_collection_thread)
+        self.trial_thread.start()
+
+    def _data_collection_thread(self):
+        while(self.running):
+            self.take_trial()
+
 
 def main():
     try:
@@ -166,9 +162,11 @@ def main():
         sleep(1)
         for i in range(100):
             frame.start_trial()
-        
+
     finally:
         frame.mot.exit()
         frame.emg.exit()
-if __name__  == "__main__":
+
+
+if __name__ == "__main__":
     main()

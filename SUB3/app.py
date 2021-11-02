@@ -3,7 +3,8 @@ import time
 import random
 from PreloadDisplay import PreloadDisplay
 from global_funcs import *
-from motor import *
+from framework import framework
+import matplotlib.pyplot as plt
 
 def show_app(port, pat_id, sess):
     root = Tk()
@@ -11,11 +12,10 @@ def show_app(port, pat_id, sess):
 
     preload_max = 0.53
     preload_min = 0.51
-    mot = motor(port, preload_max, preload_min)
-    mot.start()
-
+    frame = framework(port,patID=pat_id, sess=sess, premin = preload_min, premax= preload_max)
+    frame.start()
     def on_closing():
-        mot.exit()
+        frame.exit()
         root.destroy()
     root.protocol("WM_DELETE_WINDOW", on_closing)
 
@@ -59,7 +59,12 @@ def show_app(port, pat_id, sess):
         update_successes()
     
     def on_pause():
-        mot.play_pause()
+        
+        if frame.running:
+            frame.stop()
+        else:
+            frame.start()
+        
 
     def trash_prev():
         global success_record
@@ -105,12 +110,13 @@ def show_app(port, pat_id, sess):
     center_window(root)
     torque_value = 0
     while 1:
-        if mot.torque_update:
-            torque_value = mot.torque_value
-            mot.torque_update = False
+        if frame.mot.torque_update:
+            torque_value = frame.mot.torque_value
+            frame.mot.torque_update = False
             update_torque()
+            preload_display.update_data(torque_value)
         
-        if mot.pause_fire:
+        if not frame.running:
 
             if pause_btn_color_swap and time.time()- swap_time> PAUSE_BLINK_RATE:
                 pause_btn_color_swap = not pause_btn_color_swap
@@ -123,8 +129,26 @@ def show_app(port, pat_id, sess):
                 swap_time = time.time()
         else:
             pause_btn.configure(bg="red")
-                
 
+        if frame.show_emg:
+            frame.show_emg = False
+            fig = plt.figure()
+            ax = fig.add_subplot(1, 1, 1)
+            ax.clear()
+            xs = [i for i in range(0, 5001)]
+            xs = xs[0:1*len(frame.current_trial.emg_data)]
+
+            print(len(xs), len(frame.current_trial.emg_data))
+            ax.plot(xs, frame.current_trial.emg_data)
+
+            # Format plot
+            plt.title('EMG Readings')
+            plt.ylim([0, .4])
+            plt.ion()
+            plt.show()
+            plt.pause(5)
+            plt.close()
+            
         root.update()
 
 
