@@ -6,7 +6,8 @@ from System import Int32
 from System.Collections.Generic import List
 from Aero import AeroPy
 from collections import deque
-
+import threading
+from time import sleep
 
 
 key = "MIIBKjCB4wYHKoZIzj0CATCB1wIBATAsBgcqhkjOPQEBAiEA/////wAAAAEAAAAAAAAAAAAAAAD///////////////8wWwQg/////wAAAAEAAAAAAAAAAAAAAAD///////////////wEIFrGNdiqOpPns+u9VXaYhrxlHQawzFOw9jvOPD4n0mBLAxUAxJ02CIbnBJNqZnjhE50mt4GffpAEIQNrF9Hy4SxCR/i85uVjpEDydwN9gS3rM6D0oTlF2JjClgIhAP////8AAAAA//////////+85vqtpxeehPO5ysL8YyVRAgEBA0IABKtktl6PHswln5DTRdPbDJtbDN+KTpbIjfcmBQeGmBRqq/61zfuFgaRVuOTNbPm4rDTHnbap/KzNttIofOzAOLs="
@@ -35,7 +36,7 @@ class TrignoBase():
         self.BaseInstance = AeroPy()
 
 
-SAMPLES_TO_COLLECT = 2000
+
 
 class emg:
     def __init__(self):
@@ -72,6 +73,7 @@ class emg:
         self.TrigBase.StreamData(self.index, newTransform, 2)
 
         self.threadManager()
+        print("Done")
 
     def emg_trig_collection(self, array, sam_to_collect):
         """Starts periodic data collection of a certian number of samples collected at 1925Hz and stores into the passed array"""
@@ -100,7 +102,7 @@ class emg:
     def streaming(self):
         """This is the EMG communication thread, it chooses which array the data is stored into and how much data to store"""
         while(self._emg_collect):
-            sleep(.0001)
+            sleep(.0005)
 
             # Check if continous EMG collection is activated
             if self._cont_emg:
@@ -111,7 +113,7 @@ class emg:
             elif self._start_collect:
 
                 while(len(self.array_to_store) < self.samples_to_collect):
-                    sleep(.0001)
+                    sleep(.0005)
                     self._read_emg(self.array_to_store)
 
                 self._start_collect = False
@@ -121,7 +123,7 @@ class emg:
                 dead_array = []
                 self._read_emg(dead_array)
 
-    def stop(self):
+    def exit(self):
         """Callback to stop the data stream"""
         self.TrigBase.StopData()
         self._emg_collect = False
@@ -141,7 +143,7 @@ class emg:
 
 def main():
     arr = []
-    emg_obj = emg(arr)
+    emg_obj = emg()
     input()
 
     print("TrigCollect")

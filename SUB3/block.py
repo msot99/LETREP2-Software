@@ -15,4 +15,7 @@ class block():
     
     def number_of_trials(self):
         return len(self.trials)
+    
+    def copy_block(self):
+        return block(self.patID, self.date, self.session, self.blocknum + 1)
         

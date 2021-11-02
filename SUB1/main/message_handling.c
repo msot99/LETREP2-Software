@@ -86,7 +86,7 @@ static void command_processor_task(void* arg)
                 
                 gpio_set_level(GPIO_MOTOR_ENABLE, 0);
                 ESP_LOGI("COMMAND_PROCESSOR_TASK", "Received d");
-                printf("ack\n");
+                printf("disabled\n");
                 break;
             default:
                 break;

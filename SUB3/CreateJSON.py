@@ -20,7 +20,7 @@ def JSONmaker(blockobject):
         i+=1
         jdict["block"]["trials"].update({f"trial{i}" : 
                                         {"success" : t.success,
-                                        "failure-reason" : t.failure-reason,
+                                        "failure-reason" : t.failure_reason,
                                         "peakvalue" : t.peak,
                                         "emgdata" : t.emg_data}})
 

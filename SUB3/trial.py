@@ -5,7 +5,7 @@ class trial():
         self.emg_data = []
         self.success = False
         self.peak = 0
-        self.failure-reason = "none" 
+        self.failure_reason = "none" 
         """
             Potential failure reasons
             "prelow" - Patient failed by not maintaining preload on low end
