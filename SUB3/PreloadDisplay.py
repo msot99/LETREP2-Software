@@ -35,7 +35,7 @@ class PreloadDisplay(Canvas):
         self._good_placeholder = None
         self.update_data((max + min) / 2)
 
-    def update_position(self, id, theta, image):
+    def _update_position(self, id, theta, image):
         x = r * (1 - math.cos(theta))
         w = image_width - 2 * x
         y = image_height / 2 - r * math.sin(theta)
@@ -49,9 +49,9 @@ class PreloadDisplay(Canvas):
     def update_data(self, torque):
         z = (torque - self.preload_min) / (self.preload_max - self.preload_min)
         theta = -thetamax * math.atan(a * z)
-        self._high_placeholder = self.update_position(self._high, theta + thetamax, self.high_image)
-        self._low_placeholder  = self.update_position(self._good, theta, self.good_image)
-        self._good_placeholder = self.update_position(self._low,  theta - thetamax, self.low_image)
+        self._high_placeholder = self._update_position(self._high, theta + thetamax, self.high_image)
+        self._low_placeholder  = self._update_position(self._good, theta, self.good_image)
+        self._good_placeholder = self._update_position(self._low,  theta - thetamax, self.low_image)
 
         if z > 1:
             self.tag_raise(self._high)
@@ -62,3 +62,24 @@ class PreloadDisplay(Canvas):
         else:
             self.tag_raise(self._good)
             self.itemconfigure(self._bg, fill="#0ed145")
+
+
+
+if __name__ == "__main__":
+    import time
+    root = Tk()
+    pd = PreloadDisplay(root, 220, 300, 1, 0)
+    pd.pack()
+
+    f = 0.5
+    w = 2 * math.pi * f
+    t = 0
+    dt = 0.01
+
+    while 1:
+        data = math.sqrt(2) * math.sin(w * t)
+        pd.update_data(data)
+        print(data)
+        time.sleep(dt)
+        t += dt
+        root.update()
