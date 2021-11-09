@@ -2,13 +2,11 @@
 import threading
 from time import sleep, time
 from random import random
-from tkinter.constants import X
-import matplotlib.pyplot as plt
 
 from block import block
 from trial import trial
 from motor import motor
-from emg import emg
+from emg_copy import emg
 
 
 class framework():
@@ -34,15 +32,11 @@ class framework():
     def fire(self, failure, trial_start_time):
         # TODO Add emg capture
         array = []
-        self.current_trial.emg_data = array
-        self.emg.emg_trig_collection(array, 2000)
         print("FIRE! ", time()-trial_start_time, "  Failure:", failure)
-
+        self.current_trial.emg_data = array
+        self.emg.emg_trig_collection(array, 600)
         self.mot.fire()
         sleep(2)
-        n = 5
-        array = [avg for avg in [
-                sum(array[i:i+n])/n for i in range(0, len(array), n)] for j in range(n)]
         self.show_emg = True
         self.mot.release()
 

@@ -6,14 +6,17 @@ from global_funcs import *
 from framework import framework
 import matplotlib.pyplot as plt
 
+
 def show_app(port, pat_id, sess):
     root = Tk()
     root.configure(bg="white")
 
-    preload_max = 0.53
-    preload_min = 0.51
-    frame = framework(port,patID=pat_id, sess=sess, premin = preload_min, premax= preload_max)
-    frame.start()
+    preload_max = 0.54
+    preload_min = 0.515
+    # frame = framework(port, patID=pat_id, sess=sess,
+                    #   premin=preload_min, premax=preload_max)
+    # frame.start()
+
     def on_closing():
         frame.exit()
         root.destroy()
@@ -45,7 +48,7 @@ def show_app(port, pat_id, sess):
                 failure_count += 1
         success_lbl.configure(text="Successes: " + str(success_count))
         failure_lbl.configure(text="Failures: " + str(failure_count))
-    
+
     def update_torque():
         global torque_lbl
         torque_lbl.configure(text="Torque: " + format(torque_value, ".4f"))
@@ -57,14 +60,13 @@ def show_app(port, pat_id, sess):
         else:
             success_record.append(False)
         update_successes()
-    
+
     def on_pause():
-        
+
         if frame.running:
             frame.stop()
         else:
             frame.start()
-        
 
     def trash_prev():
         global success_record
@@ -74,18 +76,18 @@ def show_app(port, pat_id, sess):
     big_w = 10
     big_h = 3
     start_btn = Button(root, text="Start", command=on_start, width=big_w, height=big_h,
-            bg="green", font=button_font, fg=button_font_color)
+                       bg="green", font=button_font, fg=button_font_color)
     start_btn.grid(row=4, column=0, padx=padx, pady=pady)
 
     pause_btn_color_swap = True
     swap_time = 0
     PAUSE_BLINK_RATE = .5
     pause_btn = Button(root, text="Pause", command=on_pause, width=big_w, height=big_h,
-            bg="red", font=button_font, fg=button_font_color)
+                       bg="red", font=button_font, fg=button_font_color)
     pause_btn.grid(row=4, column=1, padx=padx, pady=pady)
 
     trash_btn = Button(root, text="Trash Prev\nResult", command=trash_prev, width=big_w, height=big_h,
-            bg="blue", font=button_font, fg=button_font_color)
+                       bg="blue", font=button_font, fg=button_font_color)
     trash_btn.grid(row=4, column=2, padx=padx, pady=pady)
 
     global success_lbl
@@ -110,45 +112,45 @@ def show_app(port, pat_id, sess):
     center_window(root)
     torque_value = 0
     while 1:
-        if frame.mot.torque_update:
-            torque_value = frame.mot.torque_value
-            frame.mot.torque_update = False
-            update_torque()
-            preload_display.update_data(torque_value)
-        
-        if not frame.running:
+        # if frame.mot.torque_update:
+        #     torque_value = frame.mot.torque_value
+        #     frame.mot.torque_update = False
+        #     update_torque()
+        #     preload_display.update_data(torque_value)
 
-            if pause_btn_color_swap and time.time()- swap_time> PAUSE_BLINK_RATE:
-                pause_btn_color_swap = not pause_btn_color_swap
-                pause_btn.configure(bg="red")
-                swap_time = time.time()
+        # if not frame.running:
 
-            elif not pause_btn_color_swap and time.time() - swap_time > PAUSE_BLINK_RATE:
-                pause_btn_color_swap = not pause_btn_color_swap
-                pause_btn.configure(bg="green")
-                swap_time = time.time()
-        else:
-            pause_btn.configure(bg="red")
+        #     if pause_btn_color_swap and time.time() - swap_time > PAUSE_BLINK_RATE:
+        #         pause_btn_color_swap = not pause_btn_color_swap
+        #         pause_btn.configure(bg="red")
+        #         swap_time = time.time()
 
-        if frame.show_emg:
-            frame.show_emg = False
-            fig = plt.figure()
-            ax = fig.add_subplot(1, 1, 1)
-            ax.clear()
-            xs = [i for i in range(0, 5001)]
-            xs = xs[0:1*len(frame.current_trial.emg_data)]
+        #     elif not pause_btn_color_swap and time.time() - swap_time > PAUSE_BLINK_RATE:
+        #         pause_btn_color_swap = not pause_btn_color_swap
+        #         pause_btn.configure(bg="green")
+        #         swap_time = time.time()
+        # else:
+        #     pause_btn.configure(bg="red")
 
-            print(len(xs), len(frame.current_trial.emg_data))
-            ax.plot(xs, frame.current_trial.emg_data)
+        # if frame.show_emg:
+        #     frame.show_emg = False
+        #     fig = plt.figure()
+        #     ax = fig.add_subplot(1, 1, 1)
+        #     ax.clear()
+        #     xs = [i for i in range(0, 5001)]
+        #     xs = xs[0:1*len(frame.current_trial.emg_data)]
 
-            # Format plot
-            plt.title('EMG Readings')
-            plt.ylim([0, .4])
-            plt.ion()
-            plt.show()
-            plt.pause(5)
-            plt.close()
-            
+        #     print(len(xs), len(frame.current_trial.emg_data))
+        #     ax.plot(xs, frame.current_trial.emg_data)
+
+        #     # Format plot
+        #     plt.title('EMG Readings')
+        #     plt.ylim([0, .4])
+        #     plt.ion()
+        #     plt.show()
+        #     plt.pause(5)
+        #     plt.close()
+
         root.update()
 
 

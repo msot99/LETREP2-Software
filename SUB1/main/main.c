@@ -13,7 +13,7 @@
 #include "hlfb.c"
 
 void app_main(void)
-{  
+{
     ESP_LOGI("APP_MAIN", "FreeRTOS Tasks Starting");
 
     //Starting FreeRTOS tasks

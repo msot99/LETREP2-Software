@@ -1,4 +1,3 @@
-from ctypes import alignment
 from tkinter import *
 from PIL import ImageTk, Image
 import serial
@@ -7,10 +6,10 @@ import serial.tools.list_ports
 from global_funcs import *
 from sign_in import *
 
+
 def select_device():
     root = Tk()
     root.configure(bg="white")
-
 
     ports = serial.tools.list_ports.comports()
     port_names = [x[0] + ": " + x[1] for x in ports]
@@ -41,19 +40,20 @@ def select_device():
             cont["state"] = "disabled"
         else:
             cont["state"] = "normal"
-    
-    selector = OptionMenu(root, choice, choice.get(), *port_names, command=update_button)
+
+    selector = OptionMenu(root, choice, choice.get(), *
+                          port_names, command=update_button)
     selector.configure(width=30, anchor="w")
     selector.grid(row=1, column=1)
 
     cont = Button(root, text="Continue", command=continue_button,
-            width=17, height=0, bg=button_color, font=button_font, fg=button_font_color)
+                  width=17, height=0, bg=button_color, font=button_font, fg=button_font_color)
     cont["state"] = "disabled"
     cont.grid(row=3, column=0, columnspan=2, padx=padx, pady=pady)
-    
 
     center_window(root)
     root.mainloop()
+
 
 if __name__ == "__main__":
     select_device()

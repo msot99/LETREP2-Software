@@ -4,6 +4,7 @@ from PIL import ImageTk, Image
 from global_funcs import *
 from app import show_app
 
+
 def sign_in(port):
     print("Using PORT %s" % port)
     root = Tk()
@@ -28,7 +29,8 @@ def sign_in(port):
     id_text.bind('<Return>', continue_button)
     id_text.grid(row=1, column=1, sticky="w")
 
-    sess_label = Label(root, text="Session Number:", bg="white", font=small_font)
+    sess_label = Label(root, text="Session Number:",
+                       bg="white", font=small_font)
     sess_label.grid(row=2, column=0, sticky="e")
 
     sess_choice = IntVar(root)
@@ -36,16 +38,18 @@ def sign_in(port):
 
     sess_list = range(2, 16)
 
-    sess_selector = OptionMenu(root, sess_choice, sess_choice.get(), *sess_list)
+    sess_selector = OptionMenu(
+        root, sess_choice, sess_choice.get(), *sess_list)
     sess_selector.configure(width=7, anchor="w")
     sess_selector.grid(row=2, column=1, sticky="w")
 
     cont = Button(root, text="Continue", command=continue_button,
-            width=17, height=0, bg=button_color, font=button_font, fg=button_font_color)
+                  width=17, height=0, bg=button_color, font=button_font, fg=button_font_color)
     cont.grid(row=3, column=0, columnspan=2, padx=padx, pady=pady)
 
     center_window(root)
     root.mainloop()
+
 
 if __name__ == "__main__":
     sign_in("COM1")

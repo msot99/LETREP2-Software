@@ -2,12 +2,13 @@ import clr
 clr.AddReference(
     "resources/DelsysAPI")
 clr.AddReference("System.Collections")
-from System import Int32
-from System.Collections.Generic import List
-from Aero import AeroPy
-from collections import deque
-import threading
 from time import sleep
+import threading
+from collections import deque
+from Aero import AeroPy
+from System.Collections.Generic import List
+from System import Int32
+
 
 
 key = "MIIBKjCB4wYHKoZIzj0CATCB1wIBATAsBgcqhkjOPQEBAiEA/////wAAAAEAAAAAAAAAAAAAAAD///////////////8wWwQg/////wAAAAEAAAAAAAAAAAAAAAD///////////////wEIFrGNdiqOpPns+u9VXaYhrxlHQawzFOw9jvOPD4n0mBLAxUAxJ02CIbnBJNqZnjhE50mt4GffpAEIQNrF9Hy4SxCR/i85uVjpEDydwN9gS3rM6D0oTlF2JjClgIhAP////8AAAAA//////////+85vqtpxeehPO5ysL8YyVRAgEBA0IABKtktl6PHswln5DTRdPbDJtbDN+KTpbIjfcmBQeGmBRqq/61zfuFgaRVuOTNbPm4rDTHnbap/KzNttIofOzAOLs="
@@ -36,8 +37,6 @@ class TrignoBase():
         self.BaseInstance = AeroPy()
 
 
-
-
 class emg:
     def __init__(self):
         self.array_to_store = []
@@ -47,8 +46,6 @@ class emg:
         self._cont_emg = False
         self.emg_data_collected = False
         self._start_collect = False
-
-
 
         base = TrignoBase()
         self.TrigBase = base.BaseInstance
@@ -94,12 +91,9 @@ class emg:
         dataReady = self.TrigBase.CheckDataQueue()
         if dataReady:
             DataOut = self.TrigBase.PollData()
-            # print(len(list(DataOut[0][0])),len(list(DataOut[1][0])))
-            temp_array[0].extend([abs(sample)
+            print(list(DataOut)[1], list(DataOut)[2])
+            temp_array.extend([abs(sample)
                                for sample in list(DataOut)[0][0]])
-            for i in range(13):
-                temp_array[1].extend(list(DataOut)[1][0])
-            
 
     def streaming(self):
         """This is the EMG communication thread, it chooses which array the data is stored into and how much data to store"""
@@ -119,10 +113,10 @@ class emg:
                     self._read_emg(self.array_to_store)
 
                 self._start_collect = False
-            
+
             # Store data from EMG
             else:
-                dead_array = [[], []]
+                dead_array = []
                 self._read_emg(dead_array)
 
     def exit(self):
@@ -150,16 +144,13 @@ def main():
 
     print("TrigCollect")
     # emg_obj.start_cont_collect()
-    emg_obj.emg_trig_collect()
+    emg_obj.emg_trig_collect(arr, 2000)
     input()
 
     emg_obj.stop()
     xs = [i for i in range(0, 5001)]
 
-    ys = [i for i in range(0, 200)]
     ys = arr
-    # n = 20
-    # list1 = [sum(ys[i:i+n])/n for i in range(0,len(ys),n)]
 
     xs = xs[-1*len(ys):]
 

@@ -5,7 +5,6 @@ def center_window(toplevel):
     screen_width = toplevel.winfo_screenwidth()
     screen_height = toplevel.winfo_screenheight()
 
-    
     size = tuple(int(_) for _ in toplevel.geometry().split('+')[0].split('x'))
     x = screen_width/2 - size[0]/2
     y = screen_height/2 - size[1]/2

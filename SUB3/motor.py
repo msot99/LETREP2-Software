@@ -1,15 +1,14 @@
 import serial
-import time
 from time import sleep
 from threading import Thread
-import random
+
 
 # Constants
-PRELOAD_DEBOUCE_TIME = .5
 BAUD = 115200
 
+
 class motor:
-    def __init__(self, com,max,min):
+    def __init__(self, com, max, min):
         # Serial for communication with ESP32
         self.ser = serial.Serial(com, BAUD, timeout=.1)
 
@@ -75,9 +74,7 @@ class motor:
                 if data_from_ser[:3] == "TOR":
                     self.torque_value = float(data_from_ser.split(':')[1])
                     self.torque_update = True
-                # else:
 
-                    # print(data_from_ser)
             sleep(.01)
 
     def torque_preload_check(self):
@@ -87,7 +84,6 @@ class motor:
         Return 0 if good
         Returens -1 if less than preload_min
         """
-        # print(self.torque_value, self._preload_min, self._preload_max)
         if self.torque_value > self._preload_max:
             return 1
         elif self.torque_value < self._preload_min:
