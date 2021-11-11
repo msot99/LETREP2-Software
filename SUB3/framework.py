@@ -116,7 +116,7 @@ class framework():
                 if time()-trial_start_time > 1.25:
                     break
                 if self.mot.torque_preload_check() != 0:
-                    print(self.mot.torque_preload_check())
+                    # print(self.mot.torque_preload_check())
                     failure = self.preload_failure_handler(trial_start_time)
                     break
 

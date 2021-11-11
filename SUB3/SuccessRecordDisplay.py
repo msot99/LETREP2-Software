@@ -32,7 +32,7 @@ class SuccessRecordDisplay(Canvas):
             x = margin + c * (width  - margin * 2 - radius * 2) / (nwidth  - 1)
             y = margin + r * (height - margin * 2 - radius * 2) / (nheight - 1)
             record = self.create_oval(x, y, x + 2 * radius, y + 2 * radius)
-            self.itemconfigure(record, fill=colors[2])
+            self.itemconfigure(record, fill=self.colors[2])
             self._records[i] = record
             c += 1
             if c >= nwidth:

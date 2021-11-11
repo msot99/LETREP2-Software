@@ -34,7 +34,8 @@ class motor:
         Sends enable command to the ESP32 to enable to clearpath motor
         """
         print("Enabling Motor")
-        self.ser.write("a".encode())
+        if not self.ser.closed:
+            self.ser.write("a".encode())
         # TODO Add ack checks
 
     def disable(self):
@@ -42,7 +43,8 @@ class motor:
         Sends disable command to the ESP32 to disable to clearpath motor
         """
         print("Disabling Motor")
-        self.ser.write("d".encode())
+        if not self.ser.closed:
+            self.ser.write("d".encode())
         # TODO Add ack checks
 
     def fire(self):
@@ -50,7 +52,8 @@ class motor:
         Sends fire command to the ESP32 to actuate the clearpath motor to the raised position
         """
         print("Firing Motor")
-        self.ser.write("b".encode())
+        if not self.ser.closed:
+            self.ser.write("b".encode())
         # TODO Add ack checks
 
     def release(self):
@@ -58,7 +61,8 @@ class motor:
         Sends release command to the ESP32 to return the clearpath motor to starting position
         """
         print("Releasing Motor")
-        self.ser.write("c".encode())
+        if not self.ser.closed:
+            self.ser.write("c".encode())
         # TODO Add ack checks
 
     def _read_msgs_from_esp(self):

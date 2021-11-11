@@ -91,7 +91,7 @@ class emg:
         dataReady = self.TrigBase.CheckDataQueue()
         if dataReady:
             DataOut = self.TrigBase.PollData()
-            print(list(DataOut)[1], list(DataOut)[2])
+            # print(list(DataOut)[1], list(DataOut)[2])
             temp_array.extend([abs(sample)
                                for sample in list(DataOut)[0][0]])
 

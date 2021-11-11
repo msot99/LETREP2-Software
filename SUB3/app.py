@@ -5,17 +5,15 @@ from PreloadDisplay import PreloadDisplay
 from global_funcs import *
 from framework import framework
 import matplotlib.pyplot as plt
-
+from SuccessRecordDisplay import SuccessRecordDisplay
 
 def show_app(port, pat_id, sess):
     root = Tk()
     root.configure(bg="white")
 
-    preload_max = 0.54
-    preload_min = 0.515
-    # frame = framework(port, patID=pat_id, sess=sess,
-                    #   premin=preload_min, premax=preload_max)
-    # frame.start()
+    preload_max = 0.47
+    preload_min = 0.45
+    frame = None
 
     def on_closing():
         frame.exit()
@@ -46,8 +44,8 @@ def show_app(port, pat_id, sess):
                 success_count += 1
             else:
                 failure_count += 1
-        success_lbl.configure(text="Successes: " + str(success_count))
-        failure_lbl.configure(text="Failures: " + str(failure_count))
+        # success_lbl.configure(text="Successes: " + str(success_count))
+        # failure_lbl.configure(text="Failures: " + str(failure_count))
 
     def update_torque():
         global torque_lbl
@@ -73,8 +71,8 @@ def show_app(port, pat_id, sess):
         success_record = success_record[0:-1]
         update_successes()
 
-    big_w = 10
-    big_h = 3
+    big_w = 11
+    big_h = 4
     start_btn = Button(root, text="Start", command=on_start, width=big_w, height=big_h,
                        bg="green", font=button_font, fg=button_font_color)
     start_btn.grid(row=4, column=0, padx=padx, pady=pady)
@@ -104,53 +102,73 @@ def show_app(port, pat_id, sess):
     torque_lbl.grid(row=3, column=2)
     update_successes()
 
-    preload_display = PreloadDisplay(root, 200, 400, preload_max, preload_min)
+    preload_display = PreloadDisplay(root, 200, 400, preload_min, preload_max)
     preload_display.grid(row=4, column=0)
     preload_display.configure(bg="white")
 
-    root.geometry("800x500")
+    nw = 15
+    nh = 5
+    i = 0
+    display = SuccessRecordDisplay(
+        root, 600, 200, nw, nh, margin=15, radius=15)
+    display.grid(row=4, column=4)
+
+
+    root.geometry("1200x600")
     center_window(root)
     torque_value = 0
+
+    frame = framework(port, patID=pat_id, sess=sess,
+                      premin=preload_min, premax=preload_max)
+    frame.start()
+
     while 1:
-        # if frame.mot.torque_update:
-        #     torque_value = frame.mot.torque_value
-        #     frame.mot.torque_update = False
-        #     update_torque()
-        #     preload_display.update_data(torque_value)
+        if frame.mot.torque_update:
+            torque_value = frame.mot.torque_value
+            frame.mot.torque_update = False
+            update_torque()
+            preload_display.update_data(torque_value)
 
-        # if not frame.running:
+        if not frame.running:
 
-        #     if pause_btn_color_swap and time.time() - swap_time > PAUSE_BLINK_RATE:
-        #         pause_btn_color_swap = not pause_btn_color_swap
-        #         pause_btn.configure(bg="red")
-        #         swap_time = time.time()
+            if pause_btn_color_swap and time.time() - swap_time > PAUSE_BLINK_RATE:
+                pause_btn_color_swap = not pause_btn_color_swap
+                pause_btn.configure(bg="red")
+                swap_time = time.time()
 
-        #     elif not pause_btn_color_swap and time.time() - swap_time > PAUSE_BLINK_RATE:
-        #         pause_btn_color_swap = not pause_btn_color_swap
-        #         pause_btn.configure(bg="green")
-        #         swap_time = time.time()
-        # else:
-        #     pause_btn.configure(bg="red")
+            elif not pause_btn_color_swap and time.time() - swap_time > PAUSE_BLINK_RATE:
+                pause_btn_color_swap = not pause_btn_color_swap
+                pause_btn.configure(bg="green")
+                swap_time = time.time()
+        else:
+            pause_btn.configure(bg="red")
 
-        # if frame.show_emg:
-        #     frame.show_emg = False
-        #     fig = plt.figure()
-        #     ax = fig.add_subplot(1, 1, 1)
-        #     ax.clear()
-        #     xs = [i for i in range(0, 5001)]
-        #     xs = xs[0:1*len(frame.current_trial.emg_data)]
+        if frame.show_emg:
+            display.set_record(i, random.randint(0, 1))
+            i += 1
+            if i == nw * nh:
+                i = 0
+                display.reset_all()
+            frame.show_emg = False
+            frame.current_trial.emg_data = frame.current_trial.emg_data[200:]
+            fig = plt.figure()
+            ax = fig.add_subplot(1, 1, 1)
+            ax.clear()
+            xs = [i for i in range(0, 5001)]
+            xs = xs[0:1*len(frame.current_trial.emg_data)]
 
-        #     print(len(xs), len(frame.current_trial.emg_data))
-        #     ax.plot(xs, frame.current_trial.emg_data)
+            print(len(xs), len(frame.current_trial.emg_data))
+            ax.plot(xs, frame.current_trial.emg_data)
 
-        #     # Format plot
-        #     plt.title('EMG Readings')
-        #     plt.ylim([0, .4])
-        #     plt.ion()
-        #     plt.show()
-        #     plt.pause(5)
-        #     plt.close()
-
+            # Format plot
+            plt.title('EMG Readings')
+            plt.ylim([0, 1])
+            plt.ion()
+            plt.show()
+            plt.pause(5)
+            plt.close()
+           
+        center_window(root)
         root.update()
 
 
