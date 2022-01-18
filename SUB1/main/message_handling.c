@@ -29,7 +29,7 @@ This function configures the gpio output for motor control
 */
 static void configure_gpio_output()
 {
-    // Set initial value to 0
+    // Set initial value to 1
 
     ESP_LOGI("message_handling", "Setting GPIO Output");
 
@@ -40,6 +40,8 @@ static void configure_gpio_output()
     io_conf.pull_down_en = 0;
     io_conf.pull_up_en = 0;
     gpio_config(&io_conf);
+
+    gpio_set_level(GPIO_MOTOR_A, 1);
 }
 
 /*
