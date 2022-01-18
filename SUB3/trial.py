@@ -4,6 +4,7 @@ class trial():
         self.success = False
         self.peak = 0
         self.failure_reason = "none"
+        self.acc_data = []
         """
             Potential failure reasons
             "prelow" - Patient failed by not maintaining preload on low end

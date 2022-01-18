@@ -6,7 +6,7 @@ from random import random
 from block import block
 from trial import trial
 from motor import motor
-from emg_copy import emg
+from emg import emg
 
 
 class framework():
@@ -31,9 +31,10 @@ class framework():
 
     def fire(self, failure, trial_start_time):
         # TODO Add emg capture
-        array = []
+        array = [[],[]]
         print("FIRE! ", time()-trial_start_time, "  Failure:", failure)
-        self.current_trial.emg_data = array
+        self.current_trial.emg_data = array[0]
+        self.current_trial.acc_data = array[1]
         self.emg.emg_trig_collection(array, 600)
         self.mot.fire()
         sleep(2)
@@ -116,7 +117,6 @@ class framework():
                 if time()-trial_start_time > 1.25:
                     break
                 if self.mot.torque_preload_check() != 0:
-                    # print(self.mot.torque_preload_check())
                     failure = self.preload_failure_handler(trial_start_time)
                     break
 

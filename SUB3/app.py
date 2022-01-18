@@ -120,7 +120,6 @@ def show_app(port, pat_id, sess):
 
     frame = framework(port, patID=pat_id, sess=sess,
                       premin=preload_min, premax=preload_max)
-    frame.start()
 
     while 1:
         if frame.mot.torque_update:
@@ -150,20 +149,20 @@ def show_app(port, pat_id, sess):
                 i = 0
                 display.reset_all()
             frame.show_emg = False
-            frame.current_trial.emg_data = frame.current_trial.emg_data[200:]
+            yemg = frame.current_trial.emg_data[-400:]
+            yacc = [sample / 3.0 for sample in frame.current_trial.acc_data[-400:]]
+            
             fig = plt.figure()
             ax = fig.add_subplot(1, 1, 1)
             ax.clear()
-            xs = [i for i in range(0, 5001)]
-            xs = xs[0:1*len(frame.current_trial.emg_data)]
 
-            print(len(xs), len(frame.current_trial.emg_data))
-            ax.plot(xs, frame.current_trial.emg_data)
+            ax.plot( yemg, 'r', label="EMG")
+            ax.plot( yacc, label="acc")
 
             # Format plot
             plt.title('EMG Readings')
-            plt.ylim([0, 1])
             plt.ion()
+            plt.legend()
             plt.show()
             plt.pause(5)
             plt.close()
