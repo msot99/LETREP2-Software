@@ -36,6 +36,7 @@ class motor:
         print("Enabling Motor")
         if not self.ser.closed:
             self.ser.write("a".encode())
+            self.ser.write("c".encode())
         # TODO Add ack checks
 
     def disable(self):
@@ -53,7 +54,7 @@ class motor:
         """
         print("Firing Motor")
         if not self.ser.closed:
-            self.ser.write("b".encode())
+            self.ser.write("c".encode())
         # TODO Add ack checks
 
     def release(self):
@@ -62,7 +63,7 @@ class motor:
         """
         print("Releasing Motor")
         if not self.ser.closed:
-            self.ser.write("c".encode())
+            self.ser.write("b".encode())
         # TODO Add ack checks
 
     def _read_msgs_from_esp(self):

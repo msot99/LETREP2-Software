@@ -94,11 +94,12 @@ class emg:
         dataReady = self.TrigBase.CheckDataQueue()
         if dataReady:
             DataOut = self.TrigBase.PollData()
-            # print(len(list(DataOut[0][0])),len(list(DataOut[1][0])))
             temp_array[0].extend([abs(sample)
                                for sample in list(DataOut)[0][0]])
-            for i in range(13):
-                temp_array[1].extend(list(DataOut)[1][0])
+            for j in range(4):
+                for i in range(13):
+                    temp_array[1].append(list(DataOut)[1][0][j])
+
             
 
     def streaming(self):
@@ -113,8 +114,7 @@ class emg:
 
             # Check if triggered emg collection is started
             elif self._start_collect:
-
-                while(len(self.array_to_store) < self.samples_to_collect):
+                while(len(self.array_to_store[0]) < self.samples_to_collect):
                     sleep(.0005)
                     self._read_emg(self.array_to_store)
 
