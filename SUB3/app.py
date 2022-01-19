@@ -119,14 +119,15 @@ def show_app(port, pat_id, sess):
     torque_value = 0
 
     frame = framework(port, patID=pat_id, sess=sess,
-                      premin=preload_min, premax=preload_max)
+                      premin=preload_min, premax=preload_max, no_motor=False, no_emg=False)
 
     while 1:
-        if frame.mot.torque_update:
-            torque_value = frame.mot.torque_value
-            frame.mot.torque_update = False
-            update_torque()
-            preload_display.update_data(torque_value)
+        if frame.mot:
+            if frame.mot.torque_update:
+                torque_value = frame.mot.torque_value
+                frame.mot.torque_update = False
+                update_torque()
+                preload_display.update_data(torque_value)
 
         if not frame.running:
 

@@ -10,24 +10,38 @@ from emg import emg
 
 
 class framework():
-    def __init__(self, COM, patID=1234, sess=1, blocknum=1, premin=.51, premax=.53):
+    def __init__(self, COM, patID=1234, sess=1, blocknum=1, premin=.51, premax=.53, no_motor = False, no_emg = False):
         self.preload_max = premax
         self.preload_min = premin
 
         self.block = block(patID, sess=sess, blocknum=blocknum)
 
-        self.mot = motor(COM, self.preload_max, self.preload_min)
-        self.mot.start()
-        # Give motor time to enable
-        sleep(10)
-        print("DONE Enabling motor")
-        self.emg = emg()
+        if not no_motor:
+            self.mot = motor(COM, self.preload_max, self.preload_min)
+            self.mot.start()
+            # Give motor time to enable
+            sleep(10)
+            print("Done Enabling motor")
+        else:
+            self.mot = None
+        if not no_emg:
+            self.emg = emg()
+        else:
+            self.emg = None
+        
         self.running = False
         self.show_emg = False
+        
 
     def exit(self):
-        self.mot.exit()
-        self.emg.exit()
+        if self.mot:
+            self.mot.exit()
+        else:
+            print("No Motor, Exiting")
+        if self.emg:
+            self.emg.exit()
+        else:
+            print("No EMG, Exiting")
 
     def fire(self, failure, trial_start_time):
         # TODO Add emg capture
@@ -103,6 +117,11 @@ class framework():
                         return self.preload_randomizer(trial_start_time)
 
     def take_trial(self):
+        if not self.mot or not self.emg:
+            print("Missing EMG or Motor, Skipping Trial")
+            self.current_trial = trial()
+            return
+
         if self.block:
             print("Starting Trial")
             self.current_trial = trial()
