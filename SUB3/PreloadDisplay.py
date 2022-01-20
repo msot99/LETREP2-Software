@@ -2,14 +2,9 @@ from tkinter import *
 from PIL import Image, ImageTk
 import math
 
-# animation constants
-dx = 7
-dy = 70
-r = 0.5 * (dy**2 / dx - dx)
-thetamax = math.asin(dy / r)
-a = 1
-image_width = 200
-image_height = 100
+high_image_dir = 'images/HighImage.png'
+low_image_dir  = 'images/LowImage.png'
+good_image_dir = 'images/GoodImage.png'
 
 class PreloadDisplay(Canvas):
 
@@ -23,12 +18,23 @@ class PreloadDisplay(Canvas):
         self.preload_min = min
 
         self._bg = self.create_rectangle(0, 0, width, height, fill="#0ed145")
-        self.high_image = Image.open('HighImage.png')
-        self.low_image  = Image.open('LowImage.png')
-        self.good_image = Image.open('GoodImage.png')
+        self.high_image = Image.open(high_image_dir)
+        self.low_image  = Image.open(low_image_dir)
+        self.good_image = Image.open(good_image_dir)
         self._high = self.create_image(100, 50, image=ImageTk.PhotoImage(self.high_image))
         self._low  = self.create_image(100, 50, image=ImageTk.PhotoImage(self.low_image))
         self._good = self.create_image(100, 50, image=ImageTk.PhotoImage(self.good_image))
+
+
+        # animation constants
+        self._dx = 7
+        self._dy = 70 / 200 * width
+        self._r = 0.5 * (self._dy**2 / self._dx - self._dx)
+        # self._r *= width / 200
+        self._thetamax = math.asin(self._dy / self._r)
+        self._a = 1
+        self._image_width = width
+        self._image_height = width / 2
 
         self._high_placeholder = None
         self._low_placeholder = None
@@ -36,11 +42,11 @@ class PreloadDisplay(Canvas):
         self.update_data((max + min) / 2)
 
     def _update_position(self, id, theta, image):
-        x = r * (1 - math.cos(theta))
-        w = image_width - 2 * x
-        y = image_height / 2 - r * math.sin(theta)
-        h = image_height / image_width * w
-        self.coords(id, self.width / 2, y + self.height / 2 - image_height / 2)
+        x = self._r * (1 - math.cos(theta))
+        w = self._image_width - 2 * x
+        y = self._image_height / 2 - self._r * math.sin(theta)
+        h = self._image_height / self._image_width * w
+        self.coords(id, self.width / 2, y + self.height / 2 - self._image_height / 2)
         image = ImageTk.PhotoImage(image.resize((int(w), int(h)), Image.ANTIALIAS))
         self.itemconfigure(id, image=image)
         return image
@@ -48,10 +54,10 @@ class PreloadDisplay(Canvas):
 
     def update_data(self, torque):
         z = (torque - self.preload_min) / (self.preload_max - self.preload_min)
-        theta = -thetamax * math.atan(a * z)
-        self._high_placeholder = self._update_position(self._high, theta + thetamax, self.high_image)
+        theta = -self._thetamax * math.atan(self._a * z)
+        self._high_placeholder = self._update_position(self._high, theta + self._thetamax, self.high_image)
         self._low_placeholder  = self._update_position(self._good, theta, self.good_image)
-        self._good_placeholder = self._update_position(self._low,  theta - thetamax, self.low_image)
+        self._good_placeholder = self._update_position(self._low,  theta - self._thetamax, self.low_image)
 
         if z > 1:
             self.tag_raise(self._high)
@@ -68,7 +74,7 @@ class PreloadDisplay(Canvas):
 if __name__ == "__main__":
     import time
     root = Tk()
-    pd = PreloadDisplay(root, 220, 300, 1, 0)
+    pd = PreloadDisplay(root, 200, 300, 1, 0)
     pd.pack()
 
     f = 0.5
