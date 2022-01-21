@@ -1,0 +1,15 @@
+{
+    "block": {
+        "info": {
+            "patID": 1234,
+            "date": "2022-01-21",
+            "session": 1,
+            "blocknum": 1
+        },
+        "results": {
+            "avgsuccess": null,
+            "numoftrials": 0
+        },
+        "trials": {}
+    }
+}

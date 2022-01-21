@@ -1,12 +1,14 @@
 from tkinter import *
 import time
 import random
+from turtle import update
 from PreloadDisplay import PreloadDisplay
 from global_funcs import *
 from framework import framework
 import matplotlib.pyplot as plt
 from SuccessRecordDisplay import SuccessRecordDisplay
 from PIL import ImageTk, Image
+from create_json import JSONmaker
 
 def show_app(port, pat_id, sess):
     root = Tk()
@@ -27,7 +29,24 @@ def show_app(port, pat_id, sess):
     logo_label = Label(root, image=logo, bg="white")
     logo_label.grid(row=0, column=0, padx=padx, pady=pady)
 
-    patient_info_lbl = Label(root, text=port + " " + str(pat_id) + " " + str(sess))
+    patient_info_lbl = Label(root)
+    global pat_lbl_row1
+    global pat_lbl_row2
+    pat_lbl_row1 = ""
+    pat_lbl_row2 = ""
+    def update_patient_lbl_text(row1=None, row2=None):
+        global pat_lbl_row1
+        global pat_lbl_row2
+        if row1 is None:
+            row1 = pat_lbl_row1
+        else:
+            pat_lbl_row1 = row1
+        if row2 is None:
+            row2 = pat_lbl_row2
+        else:
+            pat_lbl_row2 = row2
+        patient_info_lbl.configure(text=row1 + "\n" + row2)
+    update_patient_lbl_text(row1=port + " " + str(pat_id) + " " + str(sess))
     patient_info_lbl.configure(bg="white")
     patient_info_lbl.grid(row=0, column=1)
 
@@ -43,9 +62,15 @@ def show_app(port, pat_id, sess):
 
     def trash_prev():
         pass
-
+    
+    def format_date(date: str):
+        return date[2:].replace("-", "")
     def on_stop():
-        pass
+        b = frame.block
+        with open(f'PID{b.patID}/{format_date(b.date)}-Block{b.blocknum}.json', "w") as file:
+            JSONmaker(frame.block, file)
+        frame.new_block()
+        update_patient_lbl_text(row2="Stopped")
 
     def on_other_options():
         pass

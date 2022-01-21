@@ -2,9 +2,9 @@ from datetime import date
 
 
 class block():
-    def __init__(self, patID=1234, dte=str(date.today()), sess=1, blocknum=1):
+    def __init__(self, patID=1234, date=str(date.today()), sess=1, blocknum=1):
         self.patID = patID
-        self.date = dte
+        self.date = date
         self.session = sess
         self.blocknum = blocknum
         self.trials = list()
