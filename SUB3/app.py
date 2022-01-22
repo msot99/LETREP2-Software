@@ -8,17 +8,19 @@ from framework import framework
 import matplotlib.pyplot as plt
 from SuccessRecordDisplay import SuccessRecordDisplay
 from PIL import ImageTk, Image
-from create_json import JSONmaker
+
 
 def show_app(port, pat_id, sess):
     root = Tk()
     root.configure(bg="white")
+    root.running = True
 
     preload_max = 0.47
     preload_min = 0.45
     frame = None
 
     def on_closing():
+        root.running = False
         root.destroy()
         frame.exit()
     root.protocol("WM_DELETE_WINDOW", on_closing)
@@ -55,25 +57,18 @@ def show_app(port, pat_id, sess):
         pass
 
     def on_pause():
-        if frame.running:
-            frame.stop()
-        else:
-            frame.start()
+        frame.pause()
 
     def trash_prev():
         pass
     
-    def format_date(date: str):
-        return date[2:].replace("-", "")
-    def on_stop():
-        b = frame.block
-        with open(f'PID{b.patID}/{format_date(b.date)}-Block{b.blocknum}.json', "w") as file:
-            JSONmaker(frame.block, file)
-        frame.new_block()
-        update_patient_lbl_text(row2="Stopped")
-
     def on_other_options():
         pass
+
+    def on_stop():
+        frame.stop()
+        update_patient_lbl_text(row2="Stopped")
+        
 
     # Button configuration
     big_w = 11
@@ -145,9 +140,9 @@ def show_app(port, pat_id, sess):
 
     # Motor code
     frame = framework(port, patID=pat_id, sess=sess,
-                      premin=preload_min, premax=preload_max, no_motor=True, no_emg=True)
+                      premin=preload_min, premax=preload_max, no_motor=False, no_emg=False)
 
-    while 1:
+    while root.running:
         # Update preload display
         if frame.mot:
             if frame.mot.torque_update:

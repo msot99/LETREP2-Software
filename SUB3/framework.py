@@ -7,6 +7,7 @@ from block import block
 from trial import trial
 from motor import motor
 from emg import emg
+from create_json import JSONmaker
 
 
 class framework():
@@ -155,7 +156,19 @@ class framework():
     def new_block(self):
         self.block = self.block.copy_block()
 
+    def pause(self):
+        if self.running:
+            self.running= False
+        else:
+            self.start()
+        
+
     def stop(self):
+        b = self.block
+        with open(f'PID{b.patID}/{b.date[2:].replace("-", "")}-Block{b.blocknum}.json', "w") as file:
+            JSONmaker(self.block, file)
+        self.new_block()
+        
         self.running = False
 
     def start(self):
