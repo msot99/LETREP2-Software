@@ -36,6 +36,7 @@
 
 # Logs
 *.log
+PID*/
 
 # Build Folders
 build/

@@ -1,12 +1,13 @@
 from block import block
+from trial import trial
 import json
 
 
-def JSONmaker(blockobject):
+def JSONmaker(blockobject: block, file):
     jdict = {"block":
              {"info":
               {"patID": blockobject.patID,
-               "date": blockobject.dte,
+               "date": blockobject.date,
                "session": blockobject.session,
                "blocknum": blockobject.blocknum},
               "results":
@@ -17,20 +18,24 @@ def JSONmaker(blockobject):
 
     i = 0
     for t in blockobject.trials:
+        t: trial
         i += 1
         jdict["block"]["trials"].update({f"trial{i}":
-                                         {"success": t.success,
-                                          "failure-reason": t.failure_reason,
-                                          "peakvalue": t.peak,
-                                          "emgdata": t.emg_data}})
+                                            {"success": t.success,
+                                            "failure-reason": t.failure_reason,
+                                            "peakvalue": t.peak,
+                                            "emgdata": t.emg_data,
+                                            "accdata": t.acc_data
+                                            }
+                                        })
 
-    jfile = json.dump(jdict)
+    json.dump(jdict, file, indent=4)
 
 
 def main():
     blockobject = block()
     print(blockobject.date)
-    CreateJSON.JSONmaker(blockobject)
+    JSONmaker(blockobject)
 
 
 if __name__ == "__main__":

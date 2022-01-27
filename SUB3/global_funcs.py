@@ -18,3 +18,5 @@ small_font = ("Arial", 10)
 button_font_color = "white"
 padx = 10
 pady = 10
+
+logo_dir = "./images/Logo.jpg"

@@ -16,7 +16,7 @@ def sign_in(port):
         root.destroy()
         show_app(port, id, sess)
 
-    img = Image.open("logo.jpg")
+    img = Image.open(logo_dir)
     img = img.resize((250, 250), Image.ANTIALIAS)
     logo = ImageTk.PhotoImage(img)
     logo_label = Label(root, image=logo, bg="white")
