@@ -1,6 +1,8 @@
 import clr
+
+
 clr.AddReference(
-    "resources/DelsysAPI")
+    "c:/Program Files/LETREP2/resources/DelsysAPI")
 clr.AddReference("System.Collections")
 from System import Int32
 from System.Collections.Generic import List
@@ -66,8 +68,8 @@ class emg:
         self.TrigBase.ClearSensorList()
 
         for i in range(self.SensorsFound):
-            selectedSensor = self.TrigBase.GetSensorObject(i)
-            self.TrigBase.AddSensortoList(selectedSensor)
+            self.selectedSensor = self.TrigBase.GetSensorObject(i)
+            self.TrigBase.AddSensortoList(self.selectedSensor)
             self.index.Add(i)
 
         self.TrigBase.StreamData(self.index, newTransform, 2)

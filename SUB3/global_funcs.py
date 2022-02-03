@@ -19,4 +19,4 @@ button_font_color = "white"
 padx = 10
 pady = 10
 
-logo_dir = "./images/Logo.jpg"
+logo_dir = "C:/Program Files/LETREP2/resources/Logo.jpg"

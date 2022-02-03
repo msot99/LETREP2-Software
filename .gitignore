@@ -41,6 +41,8 @@ PID*/
 # Build Folders
 build/
 .devcontainer/
+installer/
+*.spec
 
 # Python Caches
 *.pyc

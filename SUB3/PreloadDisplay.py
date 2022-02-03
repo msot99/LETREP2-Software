@@ -2,9 +2,9 @@ from tkinter import *
 from PIL import Image, ImageTk
 import math
 
-high_image_dir = 'images/HighImage.png'
-low_image_dir  = 'images/LowImage.png'
-good_image_dir = 'images/GoodImage.png'
+high_image_dir = 'C:/Program Files/LETREP2/resources/HighImage.png'
+low_image_dir = 'C:/Program Files/LETREP2/resources/LowImage.png'
+good_image_dir = 'C:/Program Files/LETREP2/resources/GoodImage.png'
 
 class PreloadDisplay(Canvas):
 
