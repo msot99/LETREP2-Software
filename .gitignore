@@ -41,8 +41,10 @@ PID*/
 # Build Folders
 build/
 .devcontainer/
-installer/
+LETREP2_Installer/
 *.spec
+*.ini
+*.zip
 
 # Python Caches
 *.pyc
