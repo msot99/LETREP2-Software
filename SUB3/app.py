@@ -1,7 +1,6 @@
 from tkinter import *
 import time
 import random
-from turtle import update
 from PreloadDisplay import PreloadDisplay
 from global_funcs import *
 from framework import framework
@@ -10,7 +9,7 @@ from SuccessRecordDisplay import SuccessRecordDisplay
 from PIL import ImageTk, Image
 
 
-def show_app(port, pat_id, sess):
+def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     root = Tk()
     root.configure(bg="white")
     root.running = True
@@ -31,24 +30,7 @@ def show_app(port, pat_id, sess):
     logo_label = Label(root, image=logo, bg="white")
     logo_label.grid(row=0, column=0, padx=padx, pady=pady)
 
-    patient_info_lbl = Label(root)
-    global pat_lbl_row1
-    global pat_lbl_row2
-    pat_lbl_row1 = ""
-    pat_lbl_row2 = ""
-    def update_patient_lbl_text(row1=None, row2=None):
-        global pat_lbl_row1
-        global pat_lbl_row2
-        if row1 is None:
-            row1 = pat_lbl_row1
-        else:
-            pat_lbl_row1 = row1
-        if row2 is None:
-            row2 = pat_lbl_row2
-        else:
-            pat_lbl_row2 = row2
-        patient_info_lbl.configure(text=row1 + "\n" + row2)
-    update_patient_lbl_text(row1=port + " " + str(pat_id) + " " + str(sess))
+    patient_info_lbl = Label(root, text=port + " " + str(pat_id) + " " + str(sess))
     patient_info_lbl.configure(bg="white")
     patient_info_lbl.grid(row=0, column=1)
 
@@ -67,7 +49,6 @@ def show_app(port, pat_id, sess):
 
     def on_stop():
         frame.stop()
-        update_patient_lbl_text(row2="Stopped")
         general_info_lbl.configure(text="Stopped")
         general_info_lbl.last_updated = time.time()
         
@@ -146,8 +127,9 @@ def show_app(port, pat_id, sess):
 
 
     # Motor code
+    # To launch with no_motor and no_emg, run sign_in.py and hold shift while you press continue
     frame = framework(port, patID=pat_id, sess=sess,
-                      premin=preload_min, premax=preload_max, no_motor=True, no_emg=True)
+                      premin=preload_min, premax=preload_max, no_motor=no_motor, no_emg=no_emg)
 
     center_window(root)
     while root.running:
@@ -174,15 +156,10 @@ def show_app(port, pat_id, sess):
             pause_btn.configure(bg="red")
 
         # Check if a trial is just starting
-        print("Checking trial beginning")
         if frame.starting_trial:
-            general_info_lbl.configure("Get ready...")
-            print("Getting time")
+            general_info_lbl.configure(text="Begin Preloading...")
             general_info_lbl.last_updated = time.time()
-            print("Time gotten")
             frame.starting_trial = False
-            print("Flipping bit")
-        print("Trial beginning checked")
 
         # Clear general info label after 3 seconds
         if time.time() - general_info_lbl.last_updated > GI_CLEAR_TIME:

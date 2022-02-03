@@ -10,11 +10,11 @@ def sign_in(port):
     root = Tk()
     root.configure(bg="white")
 
-    def continue_button(event=None):
+    def continue_button(event=None, no_motor=False, no_emg=False):
         id = int(id_text.get("1.0", "end"))
         sess = sess_choice.get()
         root.destroy()
-        show_app(port, id, sess)
+        show_app(port, id, sess, no_motor=no_motor, no_emg=no_emg)
 
     img = Image.open(logo_dir)
     img = img.resize((250, 250), Image.ANTIALIAS)
@@ -27,6 +27,7 @@ def sign_in(port):
 
     id_text = Text(root, width=8, height=1)
     id_text.bind('<Return>', continue_button)
+    id_text.bind('<Shift-Return>', lambda x: continue_button(None, no_motor=True, no_emg=True))
     id_text.grid(row=1, column=1, sticky="w")
 
     sess_label = Label(root, text="Session Number:",
@@ -45,6 +46,7 @@ def sign_in(port):
 
     cont = Button(root, text="Continue", command=continue_button,
                   width=17, height=0, bg=button_color, font=button_font, fg=button_font_color)
+    cont.bind('<Shift-Button-1>', lambda x: continue_button(None, no_motor=True, no_emg=True))
     cont.grid(row=3, column=0, columnspan=2, padx=padx, pady=pady)
 
     center_window(root)

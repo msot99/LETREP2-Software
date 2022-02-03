@@ -37,6 +37,7 @@ class framework():
         
 
     def exit(self):
+        self.running = False
         if self.mot:
             self.mot.exit()
         else:
