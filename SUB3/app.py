@@ -68,6 +68,8 @@ def show_app(port, pat_id, sess):
     def on_stop():
         frame.stop()
         update_patient_lbl_text(row2="Stopped")
+        general_info_lbl.configure(text="Stopped")
+        general_info_lbl.last_updated = time.time()
         
 
     # Button configuration
@@ -127,6 +129,11 @@ def show_app(port, pat_id, sess):
     preload_display.grid(row=3, column=3)
     preload_display.configure(bg=df_bg)
 
+    GI_CLEAR_TIME = 3
+    general_info_lbl = Label(display_frame, text="", bg=df_bg, font=large_font)
+    general_info_lbl.grid(row=4, column=0, columnspan=4)
+    general_info_lbl.last_updated = time.time()
+
     display_frame.grid(row=1, column=1, rowspan=3, columnspan=3)
 
 
@@ -140,8 +147,9 @@ def show_app(port, pat_id, sess):
 
     # Motor code
     frame = framework(port, patID=pat_id, sess=sess,
-                      premin=preload_min, premax=preload_max, no_motor=False, no_emg=False)
+                      premin=preload_min, premax=preload_max, no_motor=True, no_emg=True)
 
+    center_window(root)
     while root.running:
         # Update preload display
         if frame.mot:
@@ -164,6 +172,21 @@ def show_app(port, pat_id, sess):
                 swap_time = time.time()
         else:
             pause_btn.configure(bg="red")
+
+        # Check if a trial is just starting
+        print("Checking trial beginning")
+        if frame.starting_trial:
+            general_info_lbl.configure("Get ready...")
+            print("Getting time")
+            general_info_lbl.last_updated = time.time()
+            print("Time gotten")
+            frame.starting_trial = False
+            print("Flipping bit")
+        print("Trial beginning checked")
+
+        # Clear general info label after 3 seconds
+        if time.time() - general_info_lbl.last_updated > GI_CLEAR_TIME:
+            general_info_lbl.configure(text="")
 
         # This happens when after a trial
         if frame.show_emg:
@@ -193,7 +216,6 @@ def show_app(port, pat_id, sess):
             plt.pause(5)
             plt.close()
            
-        center_window(root)
         root.update()
 
 

@@ -32,6 +32,8 @@ class framework():
         
         self.running = False
         self.show_emg = False
+
+        self.starting_trial = False
         
 
     def exit(self):
@@ -118,9 +120,11 @@ class framework():
                         return self.preload_randomizer(trial_start_time)
 
     def take_trial(self):
+        self.starting_trial = True
         if not self.mot or not self.emg:
             print("Missing EMG or Motor, Skipping Trial")
             self.current_trial = trial()
+            sleep(4)
             return
 
         if self.block:
