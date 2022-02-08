@@ -30,7 +30,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     logo_label = Label(root, image=logo, bg="white")
     logo_label.grid(row=0, column=0, padx=padx, pady=pady)
 
-    patient_info_lbl = Label(root, text=port + " " + str(pat_id) + " " + str(sess))
+    patient_info_lbl = Label(root, text=str(port) + " " + str(pat_id) + " " + str(sess))
     patient_info_lbl.configure(bg="white")
     patient_info_lbl.grid(row=0, column=1)
 
@@ -197,4 +197,4 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
 
 
 if __name__ == "__main__":
-    show_app("COM15", 1234, 1)
+    show_app(None, 1234, 1, no_motor=True, no_emg=True)

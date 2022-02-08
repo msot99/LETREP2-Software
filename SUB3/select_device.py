@@ -25,30 +25,21 @@ def select_device():
     label.grid(row=1, column=0)
 
     choice = StringVar(root)
-    unselected_port = "Select"
+    unselected_port = "No Motor (also disables EMG)"
     choice.set(unselected_port)
 
     def continue_button():
         port = choice.get()
-        if port == unselected_port:
-            return
         root.destroy()
-        sign_in(port.split(": ")[0])
-
-    def update_button(port):
-        if port == unselected_port:
-            cont["state"] = "disabled"
-        else:
-            cont["state"] = "normal"
+        sign_in(port.split(": ")[0] if port != unselected_port else None)
 
     selector = OptionMenu(root, choice, choice.get(), *
-                          port_names, command=update_button)
+                          port_names)
     selector.configure(width=30, anchor="w")
     selector.grid(row=1, column=1)
 
     cont = Button(root, text="Continue", command=continue_button,
                   width=17, height=0, bg=button_color, font=button_font, fg=button_font_color)
-    cont["state"] = "disabled"
     cont.grid(row=3, column=0, columnspan=2, padx=padx, pady=pady)
 
     center_window(root)
