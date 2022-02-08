@@ -8,6 +8,7 @@ from trial import trial
 from motor import motor
 from emg import emg
 from create_json import JSONmaker
+import peak
 
 
 class framework():
@@ -53,6 +54,7 @@ class framework():
         self.emg.emg_trig_collection(array, 600)
         self.mot.fire()
         sleep(2)
+        self.current_trial.peak = peak.peak
         self.show_emg = True
         self.mot.release()
 
