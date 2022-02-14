@@ -3,16 +3,18 @@ import time
 import random
 from PreloadDisplay import PreloadDisplay
 from global_funcs import *
+from more_options import *
 from framework import framework
 import matplotlib.pyplot as plt
 from SuccessRecordDisplay import SuccessRecordDisplay
 from PIL import ImageTk, Image
 
-
 def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     root = Tk()
     root.configure(bg="white")
     root.running = True
+
+    options = Options(port, pat_id, sess)
 
     preload_max = 0.47
     preload_min = 0.45
@@ -30,7 +32,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     logo_label = Label(root, image=logo, bg="white")
     logo_label.grid(row=0, column=0, padx=padx, pady=pady)
 
-    patient_info_lbl = Label(root, text=str(port) + " " + str(pat_id) + " " + str(sess))
+    patient_info_lbl = Label(root, text=str(options.port) + " " + str(options.pat_id) + " " + str(options.sess))
     patient_info_lbl.configure(bg="white")
     patient_info_lbl.grid(row=0, column=1)
 
@@ -45,7 +47,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
         pass
     
     def on_other_options():
-        pass
+        show_more_options(options)
 
     def on_stop():
         frame.stop()
@@ -128,7 +130,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
 
     # Motor code
     # To launch with no_motor and no_emg, run sign_in.py and hold shift while you press continue
-    frame = framework(port, patID=pat_id, sess=sess,
+    frame = framework(options.port, patID=options.pat_id, sess=options.sess,
                       premin=preload_min, premax=preload_max, no_motor=no_motor, no_emg=no_emg)
 
     center_window(root)
@@ -154,6 +156,10 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
                 swap_time = time.time()
         else:
             pause_btn.configure(bg="red")
+
+        if options.sess_updated:
+            patient_info_lbl.configure(text=str(options.port) + " " + str(options.pat_id) + " " + str(options.sess))
+            options.sess_updated = False
 
         # Check if a trial is just starting
         if frame.starting_trial:
