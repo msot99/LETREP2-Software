@@ -15,6 +15,7 @@ def center_window(toplevel):
 button_color = "blue"
 button_font = ("Arial", 15)
 small_font = ("Arial", 10)
+large_font = ("Arial", 20)
 button_font_color = "white"
 padx = 10
 pady = 10

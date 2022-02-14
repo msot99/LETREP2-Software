@@ -6,7 +6,7 @@ from app import show_app
 
 
 def sign_in(port):
-    print("Using PORT %s" % port)
+    print("Using PORT %s" % port) if port else print("No port selected")
     root = Tk()
     root.configure(bg="white")
 
@@ -14,7 +14,8 @@ def sign_in(port):
         id = int(id_text.get("1.0", "end"))
         sess = sess_choice.get()
         root.destroy()
-        show_app(port, id, sess)
+        no = port == None
+        show_app(port, id, sess, no_motor=no, no_emg=no)
 
     img = Image.open(logo_dir)
     img = img.resize((250, 250), Image.ANTIALIAS)
@@ -52,4 +53,4 @@ def sign_in(port):
 
 
 if __name__ == "__main__":
-    sign_in("COM1")
+    sign_in(None)
