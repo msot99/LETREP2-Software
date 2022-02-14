@@ -1,7 +1,9 @@
+import datetime
 from tkinter import *
 import time
 import random
-from turtle import update
+
+
 from PreloadDisplay import PreloadDisplay
 from global_funcs import *
 from framework import framework
@@ -10,13 +12,15 @@ from SuccessRecordDisplay import SuccessRecordDisplay
 from PIL import ImageTk, Image
 
 
+import scipy as sp
+from scipy import signal
 def show_app(port, pat_id, sess):
     root = Tk()
     root.configure(bg="white")
     root.running = True
 
-    preload_max = 0.47
-    preload_min = 0.45
+    preload_max = 0.4826
+    preload_min = 0.471
     frame = None
 
     def on_closing():
@@ -141,6 +145,7 @@ def show_app(port, pat_id, sess):
     # Motor code
     frame = framework(port, patID=pat_id, sess=sess,
                       premin=preload_min, premax=preload_max, no_motor=False, no_emg=False)
+    max = []
 
     while root.running:
         # Update preload display
@@ -149,6 +154,9 @@ def show_app(port, pat_id, sess):
                 torque_value = frame.mot.torque_value
                 frame.mot.torque_update = False
                 preload_display.update_data(torque_value)
+                max.append(abs(torque_value))
+                max = max[-20:]
+                
 
         # Pause button flashing
         if not frame.running:
@@ -175,15 +183,34 @@ def show_app(port, pat_id, sess):
                 success_display.reset_all()
 
             frame.show_emg = False
-            yemg = frame.current_trial.emg_data[-400:]
-            yacc = [sample / 3.0 for sample in frame.current_trial.acc_data[-400:]]
-            
+            yemg = frame.current_trial.emg_data
+            yacc = [sample / 3.0 for sample in frame.current_trial.acc_data]
+
+            sfreq = 50
+            low_pass = 5
+            low_pass = low_pass/(sfreq/2)
+            b2, a2 = sp.signal.butter(4, low_pass, btype='lowpass')
+            yemg = sp.signal.filtfilt(b2, a2, yemg)
+
+
             fig = plt.figure()
             ax = fig.add_subplot(1, 1, 1)
             ax.clear()
 
             ax.plot( yemg, 'r', label="EMG")
             ax.plot( yacc, label="acc")
+            save = True
+            if save:
+                current_date_and_time_string = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+                extension = ".csv"
+                file_name = str(frame.block.patID)+current_date_and_time_string + extension
+                file = open(".\logs2\\"+file_name, 'w')
+                x = 0
+                for s in yemg:
+                    file.write(str(s)+","+str(yacc[x])+"\n")
+                    x+=1
+                file.close()
+
 
             # Format plot
             plt.title('EMG Readings')
@@ -198,4 +225,4 @@ def show_app(port, pat_id, sess):
 
 
 if __name__ == "__main__":
-    show_app("COM15", 1234, 1)
+    show_app("COM15", 3132, 1)

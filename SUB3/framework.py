@@ -46,14 +46,10 @@ class framework():
 
     def fire(self, failure, trial_start_time):
         # TODO Add emg capture
-        array = [[],[]]
+        
         print("FIRE! ", time()-trial_start_time, "  Failure:", failure)
-        self.current_trial.emg_data = array[0]
-        self.current_trial.acc_data = array[1]
-        self.emg.emg_trig_collection(array, 600)
         self.mot.fire()
         sleep(2)
-        self.show_emg = True
         self.mot.release()
 
     def preload_failure_handler(self, trial_start_time):
@@ -127,6 +123,9 @@ class framework():
             print("Starting Trial")
             self.current_trial = trial()
             trial_start_time = time()
+            trial_data = [[],[]]
+        
+            self.emg.start_cont_collect(trial_data)
             # Trial starts, debounce half a second
             sleep(.75)
 
@@ -147,7 +146,18 @@ class framework():
             if self.running:
                 self.fire(failure, trial_start_time)
             else:
+                self.emg.stop_cont_collect()
                 return
+
+            self.emg.stop_cont_collect()
+
+            # Save the data to the trial
+            self.current_trial.emg_data = trial_data[0]
+            self.current_trial.acc_data = trial_data[1]
+
+            # Display the EMG
+            self.show_emg = True
+
 
             self.block.trials.append(self.current_trial)
             while(time()-trial_start_time < 10):
@@ -180,19 +190,3 @@ class framework():
     def _data_collection_thread(self):
         while(self.running):
             self.take_trial()
-
-
-def main():
-    try:
-        frame = framework('COM15')
-        sleep(1)
-        for i in range(100):
-            frame.start_trial()
-
-    finally:
-        frame.mot.exit()
-        frame.emg.exit()
-
-
-if __name__ == "__main__":
-    main()
