@@ -37,7 +37,7 @@ class motor:
         """
         date=time.strftime("%y%m%d%H%M")
 
-        logging.basicConfig(filename='./SUB3/logs/' + str(date)+'-torque.log',
+        logging.basicConfig(filename='./logs/' + str(date)+'-torque.log',
                     filemode='a',
                     format='%(message)s',
                     level=logging.INFO)
