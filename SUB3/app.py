@@ -3,24 +3,29 @@ from tkinter import *
 import time
 import random
 
-
 from PreloadDisplay import PreloadDisplay
 from global_funcs import *
+from more_options import *
 from framework import framework
 import matplotlib.pyplot as plt
 from SuccessRecordDisplay import SuccessRecordDisplay
 from PIL import ImageTk, Image
-
-
 import scipy as sp
 from scipy import signal
-def show_app(port, pat_id, sess):
+
+
+
+def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
+
     root = Tk()
     root.configure(bg="white")
     root.running = True
 
-    preload_max = 0.4826
-    preload_min = 0.471
+    options = Options(port, pat_id, sess)
+
+    preload_max = 0.47
+    preload_min = 0.45
+
     frame = None
 
     def on_closing():
@@ -35,24 +40,7 @@ def show_app(port, pat_id, sess):
     logo_label = Label(root, image=logo, bg="white")
     logo_label.grid(row=0, column=0, padx=padx, pady=pady)
 
-    patient_info_lbl = Label(root)
-    global pat_lbl_row1
-    global pat_lbl_row2
-    pat_lbl_row1 = ""
-    pat_lbl_row2 = ""
-    def update_patient_lbl_text(row1=None, row2=None):
-        global pat_lbl_row1
-        global pat_lbl_row2
-        if row1 is None:
-            row1 = pat_lbl_row1
-        else:
-            pat_lbl_row1 = row1
-        if row2 is None:
-            row2 = pat_lbl_row2
-        else:
-            pat_lbl_row2 = row2
-        patient_info_lbl.configure(text=row1 + "\n" + row2)
-    update_patient_lbl_text(row1=port + " " + str(pat_id) + " " + str(sess))
+    patient_info_lbl = Label(root, text=str(options.port) + " " + str(options.pat_id) + " " + str(options.sess))
     patient_info_lbl.configure(bg="white")
     patient_info_lbl.grid(row=0, column=1)
 
@@ -67,11 +55,12 @@ def show_app(port, pat_id, sess):
         pass
     
     def on_other_options():
-        pass
+        show_more_options(options)
 
     def on_stop():
         frame.stop()
-        update_patient_lbl_text(row2="Stopped")
+        general_info_lbl.configure(text="Stopped")
+        general_info_lbl.last_updated = time.time()
         
 
     # Button configuration
@@ -131,6 +120,11 @@ def show_app(port, pat_id, sess):
     preload_display.grid(row=3, column=3)
     preload_display.configure(bg=df_bg)
 
+    GI_CLEAR_TIME = 3
+    general_info_lbl = Label(display_frame, text="", bg=df_bg, font=large_font)
+    general_info_lbl.grid(row=4, column=0, columnspan=4)
+    general_info_lbl.last_updated = time.time()
+
     display_frame.grid(row=1, column=1, rowspan=3, columnspan=3)
 
 
@@ -140,13 +134,11 @@ def show_app(port, pat_id, sess):
 
     # End gui
 
-
-
-    # Motor code
-    frame = framework(port, patID=pat_id, sess=sess,
-                      premin=preload_min, premax=preload_max, no_motor=False, no_emg=False)
+    # To launch with no_motor and no_emg, run sign_in.py and hold shift while you press continue
+    frame = framework(options.port, patID=options.pat_id, sess=options.sess,
+                      premin=preload_min, premax=preload_max, no_motor=no_motor, no_emg=no_emg)
     max = []
-
+    center_window(root)
     while root.running:
         # Update preload display
         if frame.mot:
@@ -172,6 +164,20 @@ def show_app(port, pat_id, sess):
                 swap_time = time.time()
         else:
             pause_btn.configure(bg="red")
+
+        if options.sess_updated:
+            patient_info_lbl.configure(text=str(options.port) + " " + str(options.pat_id) + " " + str(options.sess))
+            options.sess_updated = False
+
+        # Check if a trial is just starting
+        if frame.starting_trial:
+            general_info_lbl.configure(text="Begin Preloading...")
+            general_info_lbl.last_updated = time.time()
+            frame.starting_trial = False
+
+        # Clear general info label after 3 seconds
+        if time.time() - general_info_lbl.last_updated > GI_CLEAR_TIME:
+            general_info_lbl.configure(text="")
 
         # This happens when after a trial
         if frame.show_emg:
@@ -220,9 +226,10 @@ def show_app(port, pat_id, sess):
             plt.pause(5)
             plt.close()
            
-        center_window(root)
         root.update()
 
 
 if __name__ == "__main__":
-    show_app("COM15", 3132, 1)
+
+    show_app(None, 1234, 1, no_motor=True, no_emg=True)
+

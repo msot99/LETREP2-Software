@@ -8,6 +8,7 @@ from trial import trial
 from motor import motor
 from emg import emg
 from create_json import JSONmaker
+import peak
 
 
 class framework():
@@ -32,9 +33,12 @@ class framework():
         
         self.running = False
         self.show_emg = False
+
+        self.starting_trial = False
         
 
     def exit(self):
+        self.running = False
         if self.mot:
             self.mot.exit()
         else:
@@ -50,6 +54,11 @@ class framework():
         print("FIRE! ", time()-trial_start_time, "  Failure:", failure)
         self.mot.fire()
         sleep(2)
+
+
+        self.current_trial.peak = peak.peak
+        self.show_emg = True
+
         self.mot.release()
 
     def preload_failure_handler(self, trial_start_time):
@@ -114,9 +123,11 @@ class framework():
                         return self.preload_randomizer(trial_start_time)
 
     def take_trial(self):
+        self.starting_trial = True
         if not self.mot or not self.emg:
             print("Missing EMG or Motor, Skipping Trial")
             self.current_trial = trial()
+            sleep(4)
             return
 
         if self.block:
