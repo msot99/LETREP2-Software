@@ -56,7 +56,7 @@ class framework():
         sleep(2)
 
 
-        self.current_trial.peak = peak.peak
+        self.current_trial.peak = peak.simple_peak(self.current_trial)
         self.show_emg = True
 
         self.mot.release()
