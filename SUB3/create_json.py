@@ -42,8 +42,8 @@ def main():
     import random
     for _ in range(5):
         t = trial()
-        t.acc_data = [random.random() for __ in range(30)]
-        t.emg_data = [random.random() for __ in range(30)]
+        t.acc_data = [random.random() for __ in range(30 + random.randint(0, 5))]
+        t.emg_data = [random.random() for __ in range(30 + random.randint(0, 5))]
         blockobject.trials.append(t)
     print(blockobject.date)
     with open("myfile.json", "w") as file:

@@ -8,13 +8,28 @@ def json_to_csv(json_file, csv_file):
     trials = list(trials.values())
 
     for i, trial in enumerate(trials):
-        csv_file.write(f"Trial {i} emg,")
-        for acc in trial["emgdata"]:
-            csv_file.write(str(acc) + ",")
-        csv_file.write(f"\nTrial {i} acc,")
-        for acc in trial["accdata"]:
-            csv_file.write(str(acc) + ",")
+        csv_file.write(f"Trial {i} emg, Trial {i} acc,")
+    csv_file.write("\n")
+    max_len = max([len(data) for trial in trials for data in (trial["emgdata"], trial["accdata"])])
+
+    for i in range(max_len):
+        for trial in trials:
+            if len(trial["emgdata"]) > i:
+                csv_file.write(str(trial["emgdata"][i]))
+            csv_file.write(",")
+            if len(trial["accdata"]) > i:
+                csv_file.write(str(trial["accdata"][i]))
+            csv_file.write(",")
         csv_file.write("\n")
+
+    # for i, trial in enumerate(trials):
+    #     csv_file.write(f"Trial {i} emg,")
+    #     for acc in trial["emgdata"]:
+    #         csv_file.write(str(acc) + ",")
+    #     csv_file.write(f"\nTrial {i} acc,")
+    #     for acc in trial["accdata"]:
+    #         csv_file.write(str(acc) + ",")
+    #     csv_file.write("\n")
 
 def main():
     with open("myfile.json", "r") as json_file:
