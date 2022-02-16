@@ -22,15 +22,6 @@ def json_to_csv(json_file, csv_file):
             csv_file.write(",")
         csv_file.write("\n")
 
-    # for i, trial in enumerate(trials):
-    #     csv_file.write(f"Trial {i} emg,")
-    #     for acc in trial["emgdata"]:
-    #         csv_file.write(str(acc) + ",")
-    #     csv_file.write(f"\nTrial {i} acc,")
-    #     for acc in trial["accdata"]:
-    #         csv_file.write(str(acc) + ",")
-    #     csv_file.write("\n")
-
 def main():
     with open("myfile.json", "r") as json_file:
         with open("myfile.csv", "w") as csv_file:
