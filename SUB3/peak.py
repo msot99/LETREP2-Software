@@ -18,6 +18,7 @@ def simple_peak(trialdata):
   increase=False
 
   for j in range(int((fire+(.04*1925))),int((fire+(.085*1925)))):
+      max_samp=0
       if emg[j]>=maximum[n]:
           if increase:
               maximum.append(emg[j])
