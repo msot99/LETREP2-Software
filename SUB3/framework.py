@@ -8,7 +8,9 @@ from trial import trial
 from motor import motor
 from emg import emg
 from create_json import JSONmaker
-import peak
+import scipy as sp
+from scipy import signal
+# import peak
 
 
 class framework():
@@ -31,7 +33,13 @@ class framework():
         else:
             self.emg = None
         
+        # This bit stops the block
         self.running = False
+
+        # This bit pauses the block
+        self.paused = False
+
+        # This bit generates emg signal
         self.show_emg = False
 
         self.starting_trial = False
@@ -54,10 +62,6 @@ class framework():
         print("FIRE! ", time()-trial_start_time, "  Failure:", failure)
         self.mot.fire()
         sleep(2)
-
-
-        self.current_trial.peak = peak.simple_peak(self.current_trial)
-        self.show_emg = True
 
         self.mot.release()
 
@@ -123,77 +127,93 @@ class framework():
                         return self.preload_randomizer(trial_start_time)
 
     def take_trial(self):
-        self.starting_trial = True
-        if not self.mot or not self.emg:
-            print("Missing EMG or Motor, Skipping Trial")
-            self.current_trial = trial()
-            sleep(4)
-            return
-
-        if self.block:
-            print("Starting Trial")
-            self.current_trial = trial()
-            trial_start_time = time()
-            trial_data = [[],[]]
-        
-            self.emg.start_cont_collect(trial_data)
-            # Trial starts, debounce half a second
-            sleep(.75)
-
-            # Preload while checking torque for 2 seconds past start time
-            failure = False
-            while(1):
-                sleep(.1)
-                if time()-trial_start_time > 1.25:
-                    break
-                if self.mot.torque_preload_check() != 0:
-                    failure = self.preload_failure_handler(trial_start_time)
-                    break
-
-            # Randomizer
-            if not failure:
-                failure = self.preload_randomizer(trial_start_time)
-
-            if self.running:
-                self.fire(failure, trial_start_time)
-            else:
-                self.emg.stop_cont_collect()
+        if self.paused:
+           sleep(1) 
+        else:
+            self.starting_trial = True
+            if not self.mot or not self.emg:
+                print("Missing EMG or Motor, Skipping Trial")
+                self.current_trial = trial()
+                sleep(4)
                 return
 
-            self.emg.stop_cont_collect()
+            if self.block:
+                print("Starting Trial")
+                self.current_trial = trial()
+                trial_start_time = time()
+                trial_data = [[],[]]
+            
+                self.emg.start_cont_collect(trial_data)
+                # Trial starts, debounce half a second
+                sleep(.75)
 
-            # Save the data to the trial
-            self.current_trial.emg_data = trial_data[0]
-            self.current_trial.acc_data = trial_data[1]
+                # Preload while checking torque for 2 seconds past start time
+                failure = False
+                while(1):
+                    sleep(.1)
+                    if time()-trial_start_time > 1.25:
+                        break
+                    if self.mot.torque_preload_check() != 0:
+                        failure = self.preload_failure_handler(trial_start_time)
+                        break
 
-            # Display the EMG
-            self.show_emg = True
+                # Randomizer
+                if not failure:
+                    failure = self.preload_randomizer(trial_start_time)
 
+                if not self.paused:
+                    self.fire(failure, trial_start_time)
+                else:
+                    self.emg.stop_cont_collect()
+                    return
 
-            self.block.trials.append(self.current_trial)
-            while(time()-trial_start_time < 10):
-                sleep(.1)
+                self.emg.stop_cont_collect()
+
+                # Filter and save the data to the trial
+                sfreq = 1925
+                low_pass = 5
+                low_pass = low_pass/(sfreq/2)
+                b2, a2 = sp.signal.butter(4, low_pass, btype='lowpass')
+                self.current_trial.emg_data = sp.signal.filtfilt(
+                    b2, a2, trial_data[0]).tolist()
+                self.current_trial.acc_data = trial_data[1]
+
+                # self.current_trial.peak = peak.simple_peak(self.current_trial)
+
+                # Display the EMG
+                self.show_emg = True
+
+                self.block.trials.append(self.current_trial)
+                while(time()-trial_start_time < 10):
+                    sleep(.1)
+
+    # Update preload values
+    def update_preloads(self,pre_min, pre_max):
+        self.premin = pre_min
+        self.premax = pre_max
 
     def new_block(self):
         self.block = self.block.copy_block()
 
     def pause(self):
-        if self.running:
-            self.running= False
+        if self.paused:
+            self.paused= False
         else:
-            self.start()
+            self.paused= True
         
 
     def stop(self):
+        self.running = False
+        self.paused = True
         b = self.block
         with open(f'PID{b.patID}/{b.date[2:].replace("-", "")}-Block{b.blocknum}.json', "w") as file:
             JSONmaker(self.block, file)
         self.new_block()
         
-        self.running = False
 
     def start(self):
         self.running = True
+        self.paused = False
         self.trial_thread = threading.Thread(
             target=self._data_collection_thread)
         self.trial_thread.start()

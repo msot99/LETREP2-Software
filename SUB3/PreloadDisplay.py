@@ -69,6 +69,9 @@ class PreloadDisplay(Canvas):
             self.tag_raise(self._good)
             self.itemconfigure(self._bg, fill="#0ed145")
 
+    def update_preloads(self, pre_min, pre_max):
+        self.preload_max = pre_max
+        self.preload_min = pre_min
 
 
 if __name__ == "__main__":
