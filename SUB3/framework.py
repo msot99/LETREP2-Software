@@ -1,4 +1,8 @@
 
+from concurrent.futures import process
+from datetime import datetime
+import logging
+import os
 import threading
 from time import sleep, time
 from random import random
@@ -8,9 +12,7 @@ from trial import trial
 from motor import motor
 from emg import emg
 from create_json import JSONmaker
-import scipy as sp
-from scipy import signal
-# import peak
+
 
 
 class framework():
@@ -25,7 +27,7 @@ class framework():
             self.mot.start()
             # Give motor time to enable
             sleep(10)
-            print("Done Enabling motor")
+            logging.info("Done Enabling motor")
         else:
             self.mot = None
         if not no_emg:
@@ -39,27 +41,28 @@ class framework():
         # This bit pauses the block
         self.paused = False
 
-        # This bit generates emg signal
-        self.show_emg = False
+        # THis bit indicates trial ending
+        self.finished_trial = False
 
+        # This bit indicates trial starting
         self.starting_trial = False
-        
+  
 
     def exit(self):
         self.running = False
         if self.mot:
             self.mot.exit()
         else:
-            print("No Motor, Exiting")
+            logging.warn("No Motor, Exiting")
         if self.emg:
             self.emg.exit()
         else:
-            print("No EMG, Exiting")
+            logging.warn("No EMG, Exiting")
 
     def fire(self, failure, trial_start_time):
         # TODO Add emg capture
-        
-        print("FIRE! ", time()-trial_start_time, "  Failure:", failure)
+
+        logging.info("FIRE! "+str( time()-trial_start_time)+ "  Failure:"+str( failure))
         self.mot.fire()
         sleep(2)
 
@@ -71,12 +74,12 @@ class framework():
 
         returns: Bool, true = Fire, false = Continue with other task
         """
-        print("Preload failure")
+        logging.info("Preload failure")
         good_start_time = time()
         while(1):
             sleep(.01)
             if time()-good_start_time >= 1:
-                print("Failure Recovery")
+                logging.info("Failure Recovery")
                 return False
 
             if time()-trial_start_time >= 5:
@@ -100,7 +103,7 @@ class framework():
 
     def preload_randomizer(self, trial_start_time):
         random_fire_time = time() + (5+trial_start_time-time()) * random()
-        print("Random Fire Time:", random_fire_time-time())
+        logging.info("Random Fire Time:"+ str( random_fire_time-time()))
         while(1):
             sleep(.1)
             # Check if preload amount is good
@@ -132,13 +135,13 @@ class framework():
         else:
             self.starting_trial = True
             if not self.mot or not self.emg:
-                print("Missing EMG or Motor, Skipping Trial")
+                logging.info("Missing EMG or Motor, Skipping Trial")
                 self.current_trial = trial()
                 sleep(4)
                 return
 
             if self.block:
-                print("Starting Trial")
+                logging.info("Starting Trial")
                 self.current_trial = trial()
                 trial_start_time = time()
                 trial_data = [[],[]]
@@ -168,24 +171,46 @@ class framework():
                     return
 
                 self.emg.stop_cont_collect()
-
-                # Filter and save the data to the trial
-                sfreq = 1925
-                low_pass = 5
-                low_pass = low_pass/(sfreq/2)
-                b2, a2 = sp.signal.butter(4, low_pass, btype='lowpass')
-                self.current_trial.emg_data = sp.signal.filtfilt(
-                    b2, a2, trial_data[0]).tolist()
+            
+                # Save data to trial
+                self.current_trial.emg_data = trial_data[0]
                 self.current_trial.acc_data = trial_data[1]
 
-                # self.current_trial.peak = peak.simple_peak(self.current_trial)
-
-                # Display the EMG
-                self.show_emg = True
+                # Process the data
+                self.trunkate_data()
+                
+                # Notify trial finished
+                self.finished_trial = True
 
                 self.block.trials.append(self.current_trial)
                 while(time()-trial_start_time < 10):
                     sleep(.1)
+
+    # Processes emg data by trunkating and smoothing
+    def trunkate_data(self):
+
+        #Average acc data
+        acc_avg = sum(self.current_trial.acc_data[0:500])/500
+
+        for i, smpl in enumerate(self.current_trial.acc_data):
+            if len(self.current_trial.acc_data) - 801 > i > 1001 and abs(smpl - acc_avg) > .3:
+                fire_point = i
+                logging.info("Fire point found at sample number %d" % i)
+                break
+        
+        else:
+            logging.warning("Trial has no change in Acc Data. Using middle")
+            fire_point = len(self.current_trial.acc_data)/2
+            return
+
+        #Trunkate data
+        self.current_trial.acc_data = self.current_trial.acc_data[fire_point -
+                                                                    500:fire_point+800]
+        self.current_trial.emg_data = self.current_trial.emg_data[fire_point -
+                                                                    500:fire_point+800]
+
+
+
 
     # Update preload values
     def update_preloads(self,pre_min, pre_max):
@@ -206,7 +231,10 @@ class framework():
         self.running = False
         self.paused = True
         b = self.block
-        with open(f'PID{b.patID}/{b.date[2:].replace("-", "")}-Block{b.blocknum}.json', "w") as file:
+        json_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Desktop\\LETREP2\\Data\\{b.patID}\\')
+        if not os.path.exists(json_dir):
+            os.makedirs(json_dir)
+        with open(json_dir+f'Block{b.blocknum}_{b.date[2:]}_{datetime.now().strftime("%H-%M-%S")}.json', "w") as file: 
             JSONmaker(self.block, file)
         self.new_block()
         

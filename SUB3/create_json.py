@@ -24,6 +24,7 @@ def JSONmaker(blockobject: block, file):
                                             {"success": t.success,
                                             "failure-reason": t.failure_reason,
                                             "peakvalue": t.peak,
+                                             "maxdelayms": t.max_delay_ms,
                                             "emgdata": t.emg_data,
                                             "accdata": t.acc_data
                                             }

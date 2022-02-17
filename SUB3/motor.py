@@ -29,27 +29,12 @@ class motor:
         self.torque_update = False
         self.torque_value = 0
         self.pause_fire = True
-        self.logger = True
-
-    def log(self):
-        """
-        Creates log file to record time and value of torque readings
-        """
-        date=time.strftime("%y%m%d%H%M")
-
-        logging.basicConfig(filename='./logs/' + str(date)+'-torque.log',
-                    filemode='a',
-                    format='%(message)s',
-                    level=logging.INFO)
-
-        if self.logger==True and self.torque_update==True:
-            logging.info(str(self.torque_value) + ", " + str(time.time()))
 
     def enable(self):
         """
         Sends enable command to the ESP32 to enable to clearpath motor
         """
-        print("Enabling Motor")
+        logging.info("Enabling Motor")
         if not self.ser.closed:
             self.ser.write("a".encode())
             self.ser.write("c".encode())
@@ -59,7 +44,7 @@ class motor:
         """
         Sends disable command to the ESP32 to disable to clearpath motor
         """
-        print("Disabling Motor")
+        logging.info("Disabling Motor")
         if not self.ser.closed:
             self.ser.write("d".encode())
         # TODO Add ack checks
@@ -68,7 +53,7 @@ class motor:
         """
         Sends fire command to the ESP32 to actuate the clearpath motor to the raised position
         """
-        print("Firing Motor")
+        logging.info("Firing Motor")
         if not self.ser.closed:
             self.ser.write("c".encode())
         # TODO Add ack checks
@@ -77,7 +62,7 @@ class motor:
         """
         Sends release command to the ESP32 to return the clearpath motor to starting position
         """
-        print("Releasing Motor")
+        logging.info("Releasing Motor")
         if not self.ser.closed:
             self.ser.write("b".encode())
         # TODO Add ack checks
@@ -91,9 +76,10 @@ class motor:
                 try:
                     data_from_ser = self.ser.readline().decode().strip()
                 except UnicodeDecodeError:
-                    print("thread go oopsies")
+                    logging.debug("thread go oopsies")
                 if data_from_ser[:3] == "TOR":
                     self.torque_value = float(data_from_ser.split(':')[1])
+                    logging.debug(str(self.torque_value))
                     self.torque_update = True
 
             time.sleep(.01)
@@ -131,7 +117,7 @@ class motor:
         Closes serial stops all threads and disables the motor
         """
         # Turn off motor
-        print("Motor is exiting")
+        logging.info("Motor is exiting")
         self.disable()
         time.sleep(4)
 
@@ -144,22 +130,15 @@ class motor:
         if self.ser:
             self.ser.close()
 
-        # Close log file
-        if self._log_thread:
-            self._log_thread.join()
-        logging.shutdown()
-
     def _start_threads(self):
         """
         starts threads for serial and system firing
         """
         # Create Thread(s)
         self._comm_thread = Thread(target=self._read_msgs_from_esp)
-        self._log_thread = Thread(target=self.log)
 
         # Start Thread(s)
         self._comm_thread.start()
-        self._log_thread.start()
 
 
 def main():

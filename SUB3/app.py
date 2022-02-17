@@ -1,4 +1,5 @@
-import datetime
+from datetime import datetime
+import os
 from tkinter import *
 import time
 import random
@@ -7,13 +8,47 @@ from PreloadDisplay import PreloadDisplay
 from global_funcs import *
 from more_options import *
 from framework import framework
+import peak
 import matplotlib.pyplot as plt
 from SuccessRecordDisplay import SuccessRecordDisplay
 from PIL import ImageTk, Image
+import logging
+
+# Displays the most recent trial using matplotlib
+def plot_emg(trial):
+    emg_dc_offset = sum(trial.emg_data[0:400])/400
+
+    yemg = [sample-emg_dc_offset for sample in trial.emg_data]
+
+    yemg = trial.emg_data[400:800]
+    yacc = trial.acc_data[400:800]
+
+    _, ax = plt.subplots()
+    
+    ax.plot(yemg, 'r', label="EMG")
+    
+    ax2 = ax.twinx()
+    ax2.plot(yacc,'b', label="ACC")
+
+    # Format plot
+    plt.title('Most Recent Trial Readings')
+    plt.ion()
+    plt.legend()
+    plt.show()
+    plt.pause(5)
+    plt.close()
 
 
 
 def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
+    
+    log_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop\\LETREP2\\Logs\\')
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+
+    logging.basicConfig(filename=log_dir+datetime.now().strftime('Run_%Y-%m-%d_%H-%M.log'), level=logging.DEBUG,
+                        format='%(asctime)s %(levelname)s:%(message)s')
+
 
     root = Tk()
     root.configure(bg="white")
@@ -108,7 +143,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
 
     nw = 15
     nh = 5
-    i = 0
+    trial_count= 0
     success_display = SuccessRecordDisplay(
         display_frame, 600, 220, nw, nh, margin=15, radius=15)
     success_display.grid(row=2, column=0, rowspan=2, columnspan=3)
@@ -202,46 +237,33 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
             general_info_lbl.configure(text="")
 
         # This happens when after a trial
-        if frame.show_emg:
-            # TODO Update success_display to reflect success or failure
-            success_display.set_record(i,3)
-            i += 1
-            if i == nw * nh:
-                i = 0
+        if frame.finished_trial:
+
+            # Check if we are to show_emg
+            if options.show_emg:
+                plot_emg(frame.current_trial)
+
+            # Remove DC Offset for finding peak
+            emg_dc_offset = sum(frame.current_trial.emg_data[0:400])/400
+            emg = [sample-emg_dc_offset for sample in frame.current_trial.emg_data]
+
+            # Find Peak
+            frame.current_trial.peak, frame.current_trial.max_delay_ms = peak.simple_peak(emg)
+
+            # Update successs dispaly
+            if options.display_success:
+                # TODO Calculate success
+                success_display.set_record(trial_count, random.randint(0, 1))
+            else:
+                success_display.set_record(trial_count, 3)
+            
+            # Check trial_count and reset trial bit
+            frame.finished_trial = False
+            trial_count += 1
+            if trial_count == nw * nh:
+                trial_count = 0
                 success_display.reset_all()
 
-            frame.show_emg = False
-            yemg = frame.current_trial.emg_data
-            yacc = [sample / 3.0 for sample in frame.current_trial.acc_data]
-
-
-            fig = plt.figure()
-            ax = fig.add_subplot(1, 1, 1)
-            ax.clear()
-
-            ax.plot( yemg, 'r', label="EMG")
-            ax.plot( yacc, label="acc")
-            save = True
-            if save:
-                current_date_and_time_string = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-                extension = ".csv"
-                file_name = str(frame.block.patID)+current_date_and_time_string + extension
-                file = open(".\logs2\\"+file_name, 'w')
-                x = 0
-                for s in yemg:
-                    file.write(str(s)+","+str(yacc[x])+"\n")
-                    x+=1
-                file.close()
-
-
-            # Format plot
-            plt.title('EMG Readings')
-            plt.ion()
-            plt.legend()
-            plt.show()
-            plt.pause(5)
-            plt.close()
-           
         root.update()
 
 
