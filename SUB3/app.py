@@ -204,7 +204,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
         # This happens when after a trial
         if frame.show_emg:
             # TODO Update success_display to reflect success or failure
-            success_display.set_record(i, random.randint(0, 1))
+            success_display.set_record(i,3)
             i += 1
             if i == nw * nh:
                 i = 0
