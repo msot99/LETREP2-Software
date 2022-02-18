@@ -3,6 +3,7 @@ from PIL import ImageTk, Image
 from global_funcs import *
 
 from select_device import select_device
+from analysis_app import show_analysis_app
 
 
 def show_main():
@@ -10,7 +11,8 @@ def show_main():
     root.configure(bg="white")
 
     def analysis_command():
-        pass
+        root.destroy()
+        show_analysis_app()
 
     def collection_button():
         root.destroy()

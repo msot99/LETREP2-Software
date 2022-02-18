@@ -2,13 +2,13 @@
 from tkinter import *
 from tkinter import filedialog
 from global_funcs import *
-from more_options import *
+
 from PIL import ImageTk, Image
 from analysis_tools import *
 
 
 
-def show_app():
+def show_analysis_app():
 
     root = Tk()
     root.configure(bg="white")
@@ -20,11 +20,9 @@ def show_app():
         
     root.protocol("WM_DELETE_WINDOW", on_closing)
 
-    folder_name = None
-
     def on_open():
         folder_name = filedialog.askdirectory(title="Select Patient Folder")
-        open_json_files(folder_name)
+            sessions = open_json_files(folder_name)
 
         
 
@@ -46,11 +44,10 @@ def show_app():
     center_window(root)
 
 
-    center_window(root)
     while root.running:
         root.update()
 
 
 if __name__ == "__main__":
 
-    show_app()
+    show_analysis_app()
