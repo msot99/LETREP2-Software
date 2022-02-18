@@ -1,3 +1,6 @@
+import ctypes
+ctypes.windll.ole32.CoInitialize()
+
 from tkinter import *
 from PIL import ImageTk, Image
 from global_funcs import *

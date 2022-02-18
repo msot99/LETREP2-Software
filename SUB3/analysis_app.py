@@ -22,6 +22,7 @@ def show_analysis_app():
 
     def on_open():
         folder_name = filedialog.askdirectory(title="Select Patient Folder")
+        if folder_name != "":
             sessions = open_json_files(folder_name)
 
         
