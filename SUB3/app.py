@@ -70,8 +70,8 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     logo_label = Label(root, image=logo, bg="white")
     logo_label.grid(row=0, column=0, padx=padx, pady=pady)
 
-    patient_info_lbl = Label(root, text=str(options.port) + " " + str(options.pat_id) + " " + str(options.sess))
-    patient_info_lbl.configure(bg="white")
+    patient_info_lbl = Label(root, text="PatID " + str(options.pat_id) + "\nSession #" + str(options.sess))
+    patient_info_lbl.configure(bg="white", font= ("Ariel", 14))
     patient_info_lbl.grid(row=0, column=1)
 
     # Start, Pause, Trash, Stop, and Other button functions
@@ -131,8 +131,12 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     df_bg = "gray"
     display_frame = Frame(root, bg=df_bg, padx=padx, pady=pady)
 
-    df_title = Label(display_frame, text="Current Trial", bg=df_bg, font=small_font)
-    df_title.grid(row=0, column=0)
+    df_block = Label(display_frame, text="Current Block: N/A", bg=df_bg, font=small_font)
+    df_block.grid(row=0, column=0)
+
+    df_trial = Label(display_frame, text="Current Trial: N/A",
+                     bg=df_bg, font=small_font)
+    df_trial.grid(row=0, column=1)
 
     df_torque = Label(display_frame, text="",
                      bg=df_bg, font=small_font)
@@ -143,7 +147,6 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
 
     nw = 15
     nh = 5
-    trial_count= 0
     success_display = SuccessRecordDisplay(
         display_frame, 600, 220, nw, nh, margin=15, radius=15)
     success_display.grid(row=2, column=0, rowspan=2, columnspan=3)
@@ -228,6 +231,11 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
 
         # Check if a trial is just starting
         if frame.starting_trial:
+            df_trial.configure(text="Current Trial: " + str(frame.trial_count+1))
+            #Check if this is a first trial
+            if frame.trial_count == 0:
+                df_block.configure(text="Current Block: " + str(frame.block_count))
+                success_display.reset_all()
             general_info_lbl.configure(text="Begin Preloading...")
             general_info_lbl.last_updated = time.time()
             frame.starting_trial = False
@@ -253,16 +261,17 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
             # Update successs dispaly
             if options.display_success:
                 # TODO Calculate success
-                success_display.set_record(trial_count, random.randint(0, 1))
+                success_display.set_record(frame.trial_count, random.randint(0, 1))
             else:
-                success_display.set_record(trial_count, 3)
+                success_display.set_record(frame.trial_count, 3)
             
-            # Check trial_count and reset trial bit
+            # Reset trial bit
             frame.finished_trial = False
-            trial_count += 1
-            if trial_count == nw * nh:
-                trial_count = 0
-                success_display.reset_all()
+
+            # Check if we can do another trial
+            if frame.trial_count+1 == nw * nh :
+                logging.warning("Trial count meets success display limit... Ending block")
+            
 
         root.update()
 

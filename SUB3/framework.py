@@ -46,6 +46,10 @@ class framework():
 
         # This bit indicates trial starting
         self.starting_trial = False
+
+        # Counts blocks and trials
+        self.block_count = 1
+        self.trial_count = -1
   
 
     def exit(self):
@@ -141,7 +145,10 @@ class framework():
                 return
 
             if self.block:
-                logging.info("Starting Trial")
+                # Update Trial Count
+                self.trial_count += 1
+                logging.info("Starting Trial: "+ str(self.trial_count))
+                
                 self.current_trial = trial()
                 trial_start_time = time()
                 trial_data = [[],[]]
@@ -168,6 +175,9 @@ class framework():
                     self.fire(failure, trial_start_time)
                 else:
                     self.emg.stop_cont_collect()
+
+                    # Decrementing trial_count due to not completing trial
+                    self.trial_count-=1
                     return
 
                 self.emg.stop_cont_collect()
@@ -218,6 +228,8 @@ class framework():
         self.premax = pre_max
 
     def new_block(self):
+        self.block_count+=1
+        self.trial_count = -1
         self.block = self.block.copy_block()
 
     def pause(self):
@@ -240,11 +252,12 @@ class framework():
         
 
     def start(self):
-        self.running = True
-        self.paused = False
-        self.trial_thread = threading.Thread(
-            target=self._data_collection_thread)
-        self.trial_thread.start()
+        if self.running == False:
+            self.running = True
+            self.paused = False
+            self.trial_thread = threading.Thread(
+                target=self._data_collection_thread)
+            self.trial_thread.start()
 
     def _data_collection_thread(self):
         while(self.running):
