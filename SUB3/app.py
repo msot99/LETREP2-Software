@@ -73,7 +73,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     logo_label.grid(row=0, column=0, padx=padx, pady=pady)
 
     patient_info_lbl = Label(root, text="PatID " + str(options.pat_id) + "\nSession #" + str(options.sess))
-    patient_info_lbl.configure(bg="white", font= ("Ariel", 14))
+    patient_info_lbl.configure(bg="white", font=large_font)
     patient_info_lbl.grid(row=0, column=1)
 
     # Start, Pause, Trash, Stop, and Other button functions
@@ -133,7 +133,8 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     df_bg = "gray"
     display_frame = Frame(root, bg=df_bg, padx=padx, pady=pady)
 
-    df_block = Label(display_frame, text="Current Block: N/A", bg=df_bg, font=small_font)
+    df_block = Label(display_frame, text="Current Block: N/A", 
+                     bg=df_bg, font=small_font)
     df_block.grid(row=0, column=0)
 
     df_trial = Label(display_frame, text="Current Trial: N/A",
