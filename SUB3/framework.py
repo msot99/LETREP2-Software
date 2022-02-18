@@ -232,14 +232,13 @@ class framework():
         self.trial_count = -1
         self.block = self.block.copy_block()
 
-    def pause(self):
+    def pause_block(self):
         if self.paused:
             self.paused= False
         else:
             self.paused= True
         
-
-    def stop(self):
+    def stop_block(self):
         self.running = False
         self.paused = True
         b = self.block
@@ -251,7 +250,7 @@ class framework():
         self.new_block()
         
 
-    def start(self):
+    def start_block(self):
         if self.running == False:
             self.running = True
             self.paused = False

@@ -76,10 +76,10 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
 
     # Start, Pause, Trash, Stop, and Other button functions
     def on_start():
-        frame.start()
+        frame.start_block()
 
     def on_pause():
-        frame.pause()
+        frame.pause_block()
 
     def trash_prev():
         pass
@@ -88,7 +88,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
         show_more_options(options)
 
     def on_stop():
-        frame.stop()
+        frame.stop_block()
         general_info_lbl.configure(text="Stopped")
         general_info_lbl.last_updated = time.time()
         
@@ -271,6 +271,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
             # Check if we can do another trial
             if frame.trial_count+1 == nw * nh :
                 logging.warning("Trial count meets success display limit... Ending block")
+                frame.stop_block()
             
 
         root.update()
