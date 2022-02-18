@@ -26,9 +26,11 @@ def plot_emg(trial):
     _, ax = plt.subplots()
     
     ax.plot(yemg, 'r', label="EMG")
+    ax.legend(loc=2)
     
     ax2 = ax.twinx()
     ax2.plot(yacc,'b', label="ACC")
+    ax2.legend(loc=1)
 
     # Format plot
     plt.title('Most Recent Trial Readings')
