@@ -1,6 +1,6 @@
 
 from tkinter import *
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
 from global_funcs import *
 
 from PIL import ImageTk, Image
@@ -11,6 +11,7 @@ from analysis_tools import *
 def show_analysis_app():
 
     root = Tk()
+    root.title("LETREP2 Analysis")
     root.configure(bg="white")
     root.running = True
 
@@ -23,7 +24,11 @@ def show_analysis_app():
     def on_open():
         folder_name = filedialog.askdirectory(title="Select Patient Folder")
         if folder_name != "":
-            sessions = open_json_files(folder_name)
+            sessions, multiple_patids = open_json_files(folder_name)
+        
+            if multiple_patids:
+                messagebox.showwarning(
+                    "Data Loading Error!", "Loaded Blocks Contain Differeing Patient IDs")
 
         
 

@@ -26,7 +26,14 @@ def open_json_files(directory):
             else:
                 sessions[blk.session] = [blk]
 
+    patids = []
+    for sess in sessions.values():
+        for blk in sess:
+            if blk.patID not in patids:
+                patids.append(blk.patID)
+    if len(patids)>1:
+        return sessions, True
 
-    return sessions
+    return sessions, False
 
 
