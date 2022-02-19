@@ -15,13 +15,10 @@ from PIL import ImageTk, Image
 import logging
 
 # Displays the most recent trial using matplotlib
-def plot_emg(trial):
-    emg_dc_offset = sum(trial.emg_data[0:400])/400
+def plot_emg(yacc, yemg):
 
-    yemg = [sample-emg_dc_offset for sample in trial.emg_data]
-
-    yemg = trial.emg_data[400:800]
-    yacc = trial.acc_data[400:800]
+    yemg = yemg[400:800]
+    yacc = yacc[400:800]
 
     _, ax = plt.subplots()
     
@@ -37,7 +34,7 @@ def plot_emg(trial):
     plt.ion()
     plt.legend()
     plt.show()
-    plt.pause(5)
+    plt.pause(4)
     plt.close()
 
 
@@ -249,17 +246,17 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
 
         # This happens when after a trial
         if frame.finished_trial:
-
-            # Check if we are to show_emg
-            if options.show_emg:
-                plot_emg(frame.current_trial)
-
+            
             # Remove DC Offset for finding peak
             emg_dc_offset = sum(frame.current_trial.emg_data[0:400])/400
             emg = [sample-emg_dc_offset for sample in frame.current_trial.emg_data]
 
             # Find Peak
             frame.current_trial.peak, frame.current_trial.max_delay_ms = peak.simple_peak(emg)
+
+            # Check if we are to show_emg
+            if options.show_emg:
+                plot_emg(frame.current_trial.acc_data, emg)          
 
             # Update successs dispaly
             if options.display_success:

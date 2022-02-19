@@ -64,11 +64,10 @@ class framework():
             logging.warn("No EMG, Exiting")
 
     def fire(self, failure, trial_start_time):
-        # TODO Add emg capture
 
         logging.info("FIRE! "+str( time()-trial_start_time)+ "  Failure:"+str( failure))
         self.mot.fire()
-        sleep(2)
+        sleep(1.5)
 
         self.mot.release()
 
@@ -137,7 +136,10 @@ class framework():
         if self.paused:
            sleep(1) 
         else:
+            # Update Trial Count
+            self.trial_count += 1
             self.starting_trial = True
+
             if not self.mot or not self.emg:
                 logging.info("Missing EMG or Motor, Skipping Trial")
                 self.current_trial = trial()
@@ -145,8 +147,6 @@ class framework():
                 return
 
             if self.block:
-                # Update Trial Count
-                self.trial_count += 1
                 logging.info("Starting Trial: "+ str(self.trial_count))
                 
                 self.current_trial = trial()
