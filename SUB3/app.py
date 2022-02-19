@@ -49,7 +49,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
         os.makedirs(log_dir)
 
     logging.basicConfig(filename=log_dir+datetime.now().strftime('Run_%Y-%m-%d_%H-%M.log'), level=logging.DEBUG,
-                        format='%(asctime)s %(levelname)s:%(message)s')
+                        format='%(asctime)s:%(filename)s:%(levelname)s:%(message)s')
 
 
     root = Tk()
