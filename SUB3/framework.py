@@ -6,6 +6,7 @@ import os
 import threading
 from time import sleep, time
 from random import random
+from tkinter import messagebox
 
 from block import block
 from trial import trial
@@ -248,6 +249,8 @@ class framework():
             os.makedirs(json_dir)
         with open(json_dir+f'Block{b.blocknum}_{b.date[2:]}_{datetime.now().strftime("%H-%M-%S")}.json', "w") as file: 
             JSONmaker(self.block, file)
+        messagebox.showinfo("Block Saved","Block saved to: "
+                 + json_dir+f'Block{b.blocknum}_{b.date[2:]}_{datetime.now().strftime("%H-%M-%S")}.json')
         self.new_block()
         
 
