@@ -154,7 +154,8 @@ class motor:
         Starts the system's threads and enables the motor
         """
         self._start_threads()
-        time.sleep(.1)
+        # Added sleep to allow esp to configure UART
+        time.sleep(1)
         self.enable()
 
     def play_pause(self):
