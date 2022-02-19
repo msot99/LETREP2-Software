@@ -157,7 +157,7 @@ class framework():
                 # Trial starts, debounce half a second
                 sleep(.75)
 
-                # Preload while checking torque for 2 seconds past start time
+                # Preload while checking torque for 1.25 seconds past start time
                 failure = False
                 while(1):
                     sleep(.1)
@@ -224,8 +224,9 @@ class framework():
 
     # Update preload values
     def update_preloads(self,pre_min, pre_max):
-        self.premin = pre_min
-        self.premax = pre_max
+        self.preload_min = pre_min
+        self.preload_max = pre_max
+        self.mot.update_preloads(self.preload_min, self.preload_max)
 
     def new_block(self):
         self.block_count+=1

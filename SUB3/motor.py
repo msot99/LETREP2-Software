@@ -145,6 +145,10 @@ class motor:
         else:
             return 0
 
+    def update_preloads(self,pre_min, pre_max):
+        self._preload_min = pre_min
+        self._preload_max = pre_max
+
     def start(self):
         """
         Starts the system's threads and enables the motor
