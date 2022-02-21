@@ -10,7 +10,7 @@ from emg import emg
 from create_json import JSONmaker
 import scipy as sp
 from scipy import signal
-# import peak
+import peak
 
 
 class framework():
@@ -179,6 +179,7 @@ class framework():
                 self.current_trial.acc_data = trial_data[1]
 
                 # self.current_trial.peak = peak.simple_peak(self.current_trial)
+                # self.current_trial.peak = peak.wave_avg(self.current_trial)
 
                 # Display the EMG
                 self.show_emg = True
