@@ -6,7 +6,7 @@ from time import time
 
 class M1Display(Canvas):
 
-    def __init__(self, root, width, height, max, min, threshold, bar_width=0.5, up=True, *args, **kw):
+    def __init__(self, root, width, height, max, min, threshold, baseline, bar_width=0.5, up=False, *args, **kw):
         super(M1Display, self).__init__(root, width=width, height=height, *args, **kw)
         self.width = width
         self.height = height
@@ -14,12 +14,16 @@ class M1Display(Canvas):
         self.max = max
         self.bar_width = bar_width
         self.threshold = threshold
+        self.baseline = baseline
         self.up = up
 
 
         self._bg = self.create_rectangle(0, 0, width, height, fill="#a8a8a8")
         self._threshold = self.create_rectangle(0, 0, 0, 0, fill="#858585")
         self.update_threshold(threshold, up)
+
+        self._baseline = self.create_rectangle(0, 0, 0, 0, fill="black")
+        self.update_baseline(baseline)
 
         self._bar = self.create_rectangle(0, 0, 0, 0, outline="#000000")
         self.update_position((max + min) / 2)
@@ -34,7 +38,12 @@ class M1Display(Canvas):
         if up:
             self.coords(self._threshold, 0, 0, self.width, self.get_y(threshold))
         else:
-            self.coords(self._threshold, 0, self.get_y(threshold), self.height)
+            self.coords(self._threshold, 0, self.get_y(threshold), self.width, self.height)
+
+    def update_baseline(self, baseline):
+        self.baseline = baseline
+        y = self.get_y(baseline)
+        self.coords(self._baseline, 0, y, self.width, y)
 
     def update_position(self, pos):
         w = self.bar_width * self.width
@@ -50,7 +59,7 @@ class M1Display(Canvas):
 
 if __name__ == "__main__":
     root = Tk()
-    display = M1Display(root, 200, 300, 5, 0, 3.5)
+    display = M1Display(root, 200, 300, 5, 0, 3.5, 2.5)
     display.pack()
 
     prevtime = 0

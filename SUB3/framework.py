@@ -125,7 +125,9 @@ class framework():
         if not self.mot or not self.emg:
             print("Missing EMG or Motor, Skipping Trial")
             self.current_trial = trial()
-            sleep(4)
+            sleep(3.5)
+            self.show_emg = True
+            sleep(1.5)
             return
 
         if self.block:
