@@ -1,11 +1,12 @@
 import clr
+
+
 clr.AddReference(
-    "resources/DelsysAPI")
+    "c:/Program Files/LETREP2/resources/DelsysAPI")
 clr.AddReference("System.Collections")
 from System import Int32
 from System.Collections.Generic import List
 from Aero import AeroPy
-from collections import deque
 import threading
 from time import sleep
 
@@ -66,8 +67,8 @@ class emg:
         self.TrigBase.ClearSensorList()
 
         for i in range(self.SensorsFound):
-            selectedSensor = self.TrigBase.GetSensorObject(i)
-            self.TrigBase.AddSensortoList(selectedSensor)
+            self.selectedSensor = self.TrigBase.GetSensorObject(i)
+            self.TrigBase.AddSensortoList(self.selectedSensor)
             self.index.Add(i)
 
         self.TrigBase.StreamData(self.index, newTransform, 2)
@@ -142,39 +143,3 @@ class emg:
 
         self.t1.start()
 
-
-def main():
-    arr = []
-    emg_obj = emg()
-    input()
-
-    print("TrigCollect")
-    # emg_obj.start_cont_collect()
-    emg_obj.emg_trig_collect()
-    input()
-
-    emg_obj.stop()
-    xs = [i for i in range(0, 5001)]
-
-    ys = [i for i in range(0, 200)]
-    ys = arr
-    # n = 20
-    # list1 = [sum(ys[i:i+n])/n for i in range(0,len(ys),n)]
-
-    xs = xs[-1*len(ys):]
-
-    # Draw x and y lists
-    fig = plt.figure()
-    ax = fig.add_subplot(1, 1, 1)
-    ax.clear()
-    ax.plot(xs, ys)
-
-    # Format plot
-    plt.title('EMG Readings')
-    plt.ylim([0,
-              3])
-    plt.show()
-
-
-if __name__ == "__main__":
-    main()

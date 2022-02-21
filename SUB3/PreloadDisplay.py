@@ -2,9 +2,9 @@ from tkinter import *
 from PIL import Image, ImageTk
 import math
 
-high_image_dir = 'images/HighImage.png'
-low_image_dir  = 'images/LowImage.png'
-good_image_dir = 'images/GoodImage.png'
+high_image_dir = 'C:/Program Files/LETREP2/resources/HighImage.png'
+low_image_dir = 'C:/Program Files/LETREP2/resources/LowImage.png'
+good_image_dir = 'C:/Program Files/LETREP2/resources/GoodImage.png'
 
 class PreloadDisplay(Canvas):
 
@@ -69,6 +69,9 @@ class PreloadDisplay(Canvas):
             self.tag_raise(self._good)
             self.itemconfigure(self._bg, fill="#0ed145")
 
+    def update_preloads(self, pre_min, pre_max):
+        self.preload_max = pre_max
+        self.preload_min = pre_min
 
 
 if __name__ == "__main__":
