@@ -38,7 +38,7 @@ def open_json_files(directory):
     return sessions, False
 
 def sess_to_csv(sess, folder_name):
-    for blk in sess:
+    for blk in sess.values():
         with open(join(folder_name,f"Block{blk.blocknum}_{blk.date}.csv"), "w") as csv_file:
             trls = list(blk.trials)
             for i, trl in enumerate(trls):
