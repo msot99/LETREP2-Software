@@ -1,12 +1,9 @@
-import ctypes
-ctypes.windll.ole32.CoInitialize()
-
 from tkinter import *
 from PIL import ImageTk, Image
 from global_funcs import *
 
-from select_device import select_device
-from analysis_app import show_analysis_app
+
+from analysis_app import analysis_app
 
 
 def show_main():
@@ -15,9 +12,11 @@ def show_main():
 
     def analysis_command():
         root.destroy()
-        show_analysis_app()
+        app = analysis_app()
+        app.run()
 
     def collection_button():
+        from select_device import select_device
         root.destroy()
         select_device()
 
