@@ -45,6 +45,10 @@ class M1Display(Canvas):
         y = self.get_y(baseline)
         self.coords(self._baseline, 0, y, self.width, y)
 
+    def update_bounds(self, min, max):
+        self.min = min
+        self.max = max
+
     def update_position(self, pos):
         w = self.bar_width * self.width
         x = (1 - self.bar_width) / 2 * self.width

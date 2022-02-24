@@ -22,7 +22,16 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     root.configure(bg="white")
     root.running = True
 
-    options = Options(port, pat_id, sess, pre_max=.3, pre_min=.4)
+    options = {
+        "updates": False,
+        "pat_id": pat_id,
+        "sess": sess,
+        "pre_max": 0.3,
+        "pre_min": 0.4,
+        "m1_max": 0,
+        "m1_min": 5,
+        "torque_display": False
+    }
 
     frame = None
 
@@ -38,7 +47,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     logo_label = Label(root, image=logo, bg="white")
     logo_label.grid(row=0, column=0, padx=padx, pady=pady)
 
-    patient_info_lbl = Label(root, text=str(options.port) + " " + str(options.pat_id) + " " + str(options.sess))
+    patient_info_lbl = Label(root, text=str(port) + " " + str(options["pat_id"]) + " " + str(options["sess"]))
     patient_info_lbl.configure(bg="white")
     patient_info_lbl.grid(row=0, column=1)
 
@@ -120,23 +129,24 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     preload_lbl = Label(display_frame, text="Preload Status", bg=df_bg, font=small_font)
     preload_lbl.grid(row=2, column=3)
     
-    preload_display = PreloadDisplay(display_frame, 100, 200, options.pre_min, options.pre_max)
+    preload_display = PreloadDisplay(display_frame, 100, 200, options["pre_min"], options["pre_max"])
     
     preload_display.grid(row=3, column=3)
 
     m1threshold = 1.3
-    m1display = M1Display(display_frame, 100, 200, max=2, min=0, threshold=m1threshold, baseline=1.5, bg=df_bg)
+    m1baseline = 1.5
+    m1_display = M1Display(display_frame, 100, 200, max=options["m1_max"], min=options["m1_min"], threshold=m1threshold, baseline=m1baseline, bg=df_bg)
 
     def show_preload_display():
-        m1display.grid_forget()
+        m1_display.grid_forget()
         preload_display.grid(row=3, column=3)
         preload_lbl.configure(text="Preload Status")
     
     def show_m1display(position):
         preload_display.grid_forget()
-        m1display.grid(row=3, column=3)
+        m1_display.grid(row=3, column=3)
         preload_lbl.configure(text="M1 Size")
-        m1display.update_position(position)
+        m1_display.update_position(position)
 
     GI_CLEAR_TIME = 3
     general_info_lbl = Label(display_frame, text="", bg=df_bg, font=large_font)
@@ -151,8 +161,8 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     # End gui
 
     # To launch with no_motor and no_emg, run sign_in.py and hold shift while you press continue
-    frame = framework(options.port, patID=options.pat_id, sess=options.sess,
-                      premin=options.pre_min, premax=options.pre_max, no_motor=no_motor, no_emg=no_emg)
+    frame = framework(port, patID=options["pat_id"], sess=options["sess"],
+                      premin=options["pre_min"], premax=options["pre_max"], no_motor=no_motor, no_emg=no_emg)
     max = []
     center_window(root)
     while root.running:
@@ -164,7 +174,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
                 preload_display.update_data(torque_value)
                 
                 # Take a 20 sample rolling torque average
-                if options.torque_display:
+                if options["torque_display"]:
                     max.append(abs(torque_value))
                     max = max[-20:]
                     avg_torque = sum(max)/len(max)
@@ -197,14 +207,17 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
             pause_btn.configure(bg="red")
 
         # Check for updates and then change values
-        if options.updates:
-            #Update preload values
-            frame.update_preloads(options.pre_min,options.pre_max)
-            preload_display.update_preloads(options.pre_min,options.pre_max)
+        if options["updates"]:
+            # Update preload values
+            frame.update_preloads(options["pre_min"], options["pre_max"])
+            preload_display.update_preloads(options["pre_min"], options["pre_max"])
 
-            #Update session value
-            patient_info_lbl.configure(text=str(options.port) + " " + str(options.pat_id) + " " + str(options.sess))
-            options.updates = False
+            # Update M1 bounds
+            m1_display.update_bounds(options["m1_min"], options["m1_max"])
+
+            # Update session value
+            patient_info_lbl.configure(text=str(port) + " " + str(options["pat_id"]) + " " + str(options["sess"]))
+            options["updates"] = False
 
 
         # Check if a trial is just starting
@@ -221,7 +234,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
         # This happens when after a trial
         if frame.show_emg:
             # TODO Update success_display to reflect success or failure
-            position = random.random() * (m1display.max - m1display.min) * 0.7 + m1display.min + (m1display.max - m1display.min) * 0.3
+            position = random.random() * (m1_display.max - m1_display.min) * 0.7 + m1_display.min + (m1_display.max - m1_display.min) * 0.3
             show_m1display(position)
             success_display.set_record(i, position < m1threshold)
             i += 1
