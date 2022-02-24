@@ -134,13 +134,13 @@ class motor:
     def torque_preload_check(self):
         """
         Checks the motors torque:
-        Returns 1 if greater than preload_max
+        Returns 1 if force is greater than preload_max
         Return 0 if good
-        Returens -1 if less than preload_min
+        Returens -1 if force is less than preload_min
         """
-        if self.torque_value > self._preload_max:
+        if self.torque_value < self._preload_max:
             return 1
-        elif self.torque_value < self._preload_min:
+        elif self.torque_value > self._preload_min:
             return -1
         else:
             return 0
