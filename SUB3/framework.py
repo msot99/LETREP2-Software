@@ -162,21 +162,22 @@ class framework():
                 sleep(.75)
 
                 # Preload while checking torque for 1.25 seconds past start time
-                failure = False
+                failure_status = False
                 while(1):
                     sleep(.1)
                     if time()-trial_start_time > 1.25:
                         break
                     if self.mot.torque_preload_check() != 0:
-                        failure = self.preload_failure_handler(trial_start_time)
+                        failure_status = self.preload_failure_handler(trial_start_time)
                         break
 
                 # Randomizer
-                if not failure:
-                    failure = self.preload_randomizer(trial_start_time)
+                if not failure_status:
+                    failure_status = self.preload_randomizer(trial_start_time)
 
                 if not self.paused:
-                    self.fire(failure, trial_start_time)
+                    self.current_trial.success = failure_status
+                    self.fire(failure_status, trial_start_time)
                 else:
                     self.emg.stop_cont_collect()
 
