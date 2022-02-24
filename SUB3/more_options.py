@@ -1,6 +1,7 @@
 from msilib.schema import CheckBox
 from tkinter import *
 from global_funcs import *
+import logging
 
 class Options:
     def __init__(self, port, pat_id, sess, pre_min = .4, pre_max = .5, display_T=False):
@@ -11,25 +12,32 @@ class Options:
         self.pre_min = pre_min
         self.pre_max = pre_max
         self.updates = False
+        self.show_emg = False
+        self.display_success = False
         
     
     def copy(self):
         return Options(self.port, self.pat_id, self.sess, self.torque_display)
 
     def impose_on(self, other):
+        logging.debug("Imposing more options on options.")
+
         other.updates = True
         other.port = self.port
         other.pat_id = self.pat_id
         other.torque_display = self.torque_display
         other.pre_max = self.pre_max
         other.pre_min = self.pre_min
+        other.show_emg = self.show_emg
+        other.display_success = self.display_success
         if other.sess != self.sess:
             other.sess = self.sess
-            print("sess_updated")
+            logging.debug("sess_updated")
         else:
             other.sess = self.sess
 
 def show_more_options(options):
+    logging.debug("Displaying more options")
     root = Tk()
     root.running = True
     root.configure(bg="white")
@@ -93,6 +101,24 @@ def show_more_options(options):
                                        variable=tor_disp, onvalue=True, offvalue=False, command=tor_disp_command)
     torque_disp_checkbox.grid(row=6,column=0,columnspan=2)
 
+    emg_plot = BooleanVar(root)
+    emg_plot.set(options.show_emg)
+
+    def show_emg_command():
+        modified_options.show_emg = emg_plot.get()
+    emg_plot_checkbox = Checkbutton(root, bg='white', text='Plot Emg/Acc',
+                                    variable=emg_plot, onvalue=True, offvalue=False, command=show_emg_command)
+    emg_plot_checkbox.grid(row=7, column=0, columnspan=2)
+
+    suc_disp = BooleanVar(root)
+    suc_disp.set(options.display_success)
+
+    def suc_disp_command():
+        modified_options.display_success = suc_disp.get()
+    suc_disp_checkbox = Checkbutton(root, bg='white', text='Display Successes',
+                                    variable=suc_disp, onvalue=True, offvalue=False, command=suc_disp_command)
+    suc_disp_checkbox.grid(row=8, column=0, columnspan=2)
+
 
     def exit():
         root.running = False
@@ -107,10 +133,10 @@ def show_more_options(options):
     root.protocol("WM_DELETE_WINDOW", exit)
 
     ok_button = Button(root, text="Ok", command=ok, width=10, height=2)
-    ok_button.grid(row=7, column=0, sticky="e", padx=padx, pady=pady)
+    ok_button.grid(row=9, column=0, sticky="e", padx=padx, pady=pady)
 
     cancel_button = Button(root, text="Cancel", command=exit, width=10, height=2)
-    cancel_button.grid(row=7, column=1, sticky="w", padx=padx, pady=pady)
+    cancel_button.grid(row=9, column=1, sticky="w", padx=padx, pady=pady)
 
     center_window(root)
     # root.mainloop()

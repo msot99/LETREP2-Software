@@ -3,6 +3,7 @@ class trial():
         self.emg_data = []
         self.success = False
         self.peak = 0
+        self.max_delay_ms = 0
         self.failure_reason = "none"
         self.acc_data = []
         """

@@ -24,6 +24,17 @@ def JSONmaker(blockobject: block, file):
     for t in blockobject.trials:
         t: trial
         i += 1
+
+        jdict["block"]["trials"].update({f"trial{i}":
+                                            {"success": t.success,
+                                            "failure-reason": t.failure_reason,
+                                            "peakvalue": t.peak,
+                                             "maxdelayms": t.max_delay_ms,
+                                            "emgdata": t.emg_data,
+                                            "accdata": t.acc_data
+                                            }
+                                        })
+
         jdict["block"]["trials"].update({
             f"trial{i}":{
                 "success": t.success,
@@ -33,6 +44,7 @@ def JSONmaker(blockobject: block, file):
                 "accdata": t.acc_data
             }
         })
+
 
     json.dump(jdict, file, indent=4)
 
