@@ -284,7 +284,10 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
                 position = random.random() * (m1display.max - m1display.min) * 0.7 + \
                     m1display.min + (m1display.max - m1display.min) * 0.3
                 show_m1display(position)
-                success_display.set_record(i, position < m1threshold)
+                success_display.set_record(
+                    frame.trial_count, position < m1threshold)
+                frame.current_trial.success = position < m1threshold
+                
             else:
                 success_display.set_record(frame.trial_count, 3)
             
