@@ -1,3 +1,4 @@
+from asyncio.log import logger
 import datetime
 from tkinter import *
 import time
@@ -86,6 +87,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     PAUSE_BLINK_RATE = .5
     pause_btn = Button(root, text="Pause Block", command=on_pause, width=big_w, height=big_h,
                        bg="red", font=button_font, fg=button_font_color)
+    pause_btn['state'] = 'disabled'
     pause_btn.grid(row=2, column=0, padx=padx, pady=pady)
 
     # trash_btn
@@ -96,6 +98,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     # stop_btn
     stop_btn = Button(root, text="Stop Block", command=on_stop, width=big_w, height=big_h,
                         bg="gray", font=button_font, fg=button_font_color)
+    stop_btn['state'] = 'disabled'
     stop_btn.grid(row=3, column=0, padx=padx, pady=pady)
 
     # other_opts_btn
@@ -186,24 +189,40 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
 
 
         # Pause button flashing
+        
+        # Log this?
+        assert frame.paused or frame.running
         if frame.paused:
-
-            other_opts_btn['state'] = 'normal'
-
-            if pause_btn_color_swap and time.time() - swap_time > PAUSE_BLINK_RATE:
-                pause_btn_color_swap = not pause_btn_color_swap
-                pause_btn.configure(bg="red")
-                swap_time = time.time()
-
-            elif not pause_btn_color_swap and time.time() - swap_time > PAUSE_BLINK_RATE:
-                pause_btn_color_swap = not pause_btn_color_swap
-                pause_btn.configure(bg="green")
-                swap_time = time.time()
-        else:
-            if not frame.running:
+            if frame.running:
+                # Running, but paused
                 other_opts_btn['state'] = 'normal'
+                start_btn['state'] = 'disabled'
+                pause_btn['state'] = 'normal'
+                stop_btn['state'] = 'normal'
+
+                if pause_btn_color_swap and time.time() - swap_time > PAUSE_BLINK_RATE:
+                    pause_btn_color_swap = not pause_btn_color_swap
+                    pause_btn.configure(bg="red")
+                    swap_time = time.time()
+
+                elif not pause_btn_color_swap and time.time() - swap_time > PAUSE_BLINK_RATE:
+                    pause_btn_color_swap = not pause_btn_color_swap
+                    pause_btn.configure(bg="green")
+                    swap_time = time.time()
             else:
-                other_opts_btn['state'] = 'disabled'
+                # Not running; stopped
+                other_opts_btn['state'] = 'normal'
+                start_btn['state'] = 'normal'
+                pause_btn['state'] = 'disabled'
+                stop_btn['state'] = 'disabled'
+
+                pause_btn.configure(bg="red")
+        else:
+            # Running, not paused
+            other_opts_btn['state'] = 'disabled'
+            start_btn['state'] = 'disabled'
+            pause_btn['state'] = 'normal'
+            stop_btn['state'] = 'normal'
 
             pause_btn.configure(bg="red")
 

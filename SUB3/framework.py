@@ -37,7 +37,7 @@ class framework():
         self.running = False
 
         # This bit pauses the block
-        self.paused = False
+        self.paused = True
 
         # This bit generates emg signal
         self.show_emg = False
@@ -198,10 +198,7 @@ class framework():
         self.block = self.block.copy_block()
 
     def pause(self):
-        if self.paused:
-            self.paused= False
-        else:
-            self.paused= True
+        self.paused = not self.paused
         
 
     def stop(self):
