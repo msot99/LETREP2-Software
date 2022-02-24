@@ -4,7 +4,6 @@ from tkinter import *
 import time
 import random
 
-from cv2 import threshold
 from M1Display import M1Display
 
 from PreloadDisplay import PreloadDisplay
@@ -282,7 +281,10 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
             # Update successs dispaly
             if options.display_success:
                 # TODO Calculate success
-                success_display.set_record(frame.trial_count, random.randint(0, 1))
+                position = random.random() * (m1display.max - m1display.min) * 0.7 + \
+                    m1display.min + (m1display.max - m1display.min) * 0.3
+                show_m1display(position)
+                success_display.set_record(i, position < m1threshold)
             else:
                 success_display.set_record(frame.trial_count, 3)
             
@@ -293,52 +295,6 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
             if frame.trial_count+1 == nw * nh :
                 logging.warning("Trial count meets success display limit... Ending block")
                 frame.stop_block()
-            
-
-
-        if frame.show_emg:
-            # TODO Update success_display to reflect success or failure
-            position = random.random() * (m1display.max - m1display.min) * 0.7 + m1display.min + (m1display.max - m1display.min) * 0.3
-            show_m1display(position)
-            success_display.set_record(i, position < m1threshold)
-            i += 1
-            if i == nw * nh:
-                i = 0
-                success_display.reset_all()
-
-            frame.show_emg = False
-            
-            if not no_emg:
-              yemg = frame.current_trial.emg_data
-              yacc = [sample / 3.0 for sample in frame.current_trial.acc_data]
-
-
-              fig = plt.figure()
-              ax = fig.add_subplot(1, 1, 1)
-              ax.clear()
-
-              ax.plot( yemg, 'r', label="EMG")
-              ax.plot( yacc, label="acc")
-              save = True
-              if save:
-                  current_date_and_time_string = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-                  extension = ".csv"
-                  file_name = str(frame.block.patID)+current_date_and_time_string + extension
-                  file = open(".\logs2\\"+file_name, 'w')
-                  x = 0
-                  for s in yemg:
-                      file.write(str(s)+","+str(yacc[x])+"\n")
-                      x+=1
-                  file.close()
-
-
-              # Format plot
-              plt.title('EMG Readings')
-              plt.ion()
-              plt.legend()
-              plt.show()
-              plt.pause(5)
-              plt.close()
            
 
         root.update()

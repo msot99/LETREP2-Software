@@ -8,17 +8,18 @@ def simple_peak(emg):
 
     max_samp = 0
 
-    for j in range(fire,int((fire+(.085*1925)))):
-        if emg[j]>=maximum[n]:
-            if increase:
-                maximum.append(emg[j])
-                increase=False
-                n+=1
-            else:
-                maximum[n]=emg[j]
-            max_samp=j
-        elif j>(max_samp+((wavelength/2)*freq)):
-            increase=True
+    if emg:
+        for j in range(fire,int((fire+(.085*1925)))):
+            if emg[j]>=maximum[n]:
+                if increase:
+                    maximum.append(emg[j])
+                    increase=False
+                    n+=1
+                else:
+                    maximum[n]=emg[j]
+                max_samp=j
+            elif j>(max_samp+((wavelength/2)*freq)):
+                increase=True
 
     peak=maximum[-1]
 

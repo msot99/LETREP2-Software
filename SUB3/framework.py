@@ -145,14 +145,9 @@ class framework():
 
                 logging.info("Missing EMG or Motor, Skipping Trial")
                 self.current_trial = trial()
-                sleep(4)
-
-              print("Missing EMG or Motor, Skipping Trial")
-              self.current_trial = trial()
-              sleep(3.5)
-              self.show_emg = True
-              sleep(1.5)
-
+                sleep(3.5)
+                self.finished_trial = True
+                sleep(1.5)
                 return
 
             if self.block:
