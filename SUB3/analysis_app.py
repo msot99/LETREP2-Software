@@ -38,6 +38,10 @@ class analysis_app(Tk):
                         bg="blue", font=button_font, fg=button_font_color)
         self.csv_btn.grid(row=2, column=0, padx=padx, pady=pady)
 
+        self.plot_frame = Frame(self, )
+        self.plot_frame.grid(
+            row=3, column=0, columnspan=4, rowspan=4, padx=padx, pady=pady+10)
+
         # Browser frame and widgets
         self.browser_frame = Frame(self, )
         self.browser_frame.grid(row=0, column=1, columnspan = 4, rowspan = 4, padx=padx, pady=pady)
