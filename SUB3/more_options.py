@@ -15,9 +15,8 @@ def show_more_options(options):
     id_label = Label(root, text="Patient ID:", bg="white", font=small_font)
     id_label.grid(row=1, column=0, sticky="e")
     
-    id_entry = Entry(root, width=8, fg='gray')
+    id_entry = Entry(root, width=8)
     id_entry.insert(0, str(options["pat_id"]))
-    id_entry.configure(state='disabled')
     id_entry.grid(row=1, column=1, sticky="w")
 
     pre_max_label = Label(root, text="Preload Max:", bg="white", font=small_font)

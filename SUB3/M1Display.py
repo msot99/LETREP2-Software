@@ -10,6 +10,7 @@ class M1Display(Canvas):
         super(M1Display, self).__init__(root, width=width, height=height, *args, **kw)
         self.width = width
         self.height = height
+        self.pos = 0
         self.min = min
         self.max = max
         self.bar_width = bar_width
@@ -45,11 +46,12 @@ class M1Display(Canvas):
         y = self.get_y(baseline)
         self.coords(self._baseline, 0, y, self.width, y)
 
-    def update_bounds(self, min, max):
-        self.min = min
-        self.max = max
+    def update_bounds(self, m1min, m1max):
+        self.min = m1min
+        self.max = m1max
 
     def update_position(self, pos):
+        self.pos = pos
         w = self.bar_width * self.width
         x = (1 - self.bar_width) / 2 * self.width
         y = self.get_y(pos)
@@ -59,11 +61,19 @@ class M1Display(Canvas):
         color = "#0ed145" if (pos > self.threshold) == self.up else "#ec1c24"
         self.itemconfigure(self._bar, fill=color)
 
+    def update_all(self, threshold=None, baseline=None, m1min=None, m1max=None, pos=None):
+        self.update_bounds(m1min if m1min else self.min, m1max if m1max else self.max)
+        self.update_threshold(threshold if threshold else self.threshold)
+        self.update_baseline(baseline if baseline else self.baseline)
+        self.update_position(pos if pos else self.pos)
+
+
 
 
 if __name__ == "__main__":
     root = Tk()
-    display = M1Display(root, 200, 300, 5, 0, 3.5, 2.5)
+    m1max = 5
+    display = M1Display(root, 200, 300, m1max, 0, 3.5, 2.5)
     display.pack()
 
     prevtime = 0
@@ -72,4 +82,6 @@ if __name__ == "__main__":
             pos = 5 * random()
             display.update_position(pos)
             prevtime = time()
+            m1max += 0.25
+            display.update_all(m1max=m1max)
         root.update()

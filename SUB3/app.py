@@ -10,6 +10,7 @@ from PreloadDisplay import PreloadDisplay
 from global_funcs import *
 from more_options import *
 from framework import framework
+from block import block
 import matplotlib.pyplot as plt
 from SuccessRecordDisplay import SuccessRecordDisplay
 from PIL import ImageTk, Image
@@ -28,8 +29,8 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
         "sess": sess,
         "pre_max": 0.3,
         "pre_min": 0.4,
-        "m1_max": 0,
-        "m1_min": 5,
+        "m1_max": 5,
+        "m1_min": 0,
         "torque_display": False
     }
 
@@ -146,7 +147,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
         preload_display.grid_forget()
         m1_display.grid(row=3, column=3)
         preload_lbl.configure(text="M1 Size")
-        m1_display.update_position(position)
+        m1_display.update_all(m1min=options["m1_min"], m1max=options["m1_max"], pos=position)
 
     GI_CLEAR_TIME = 3
     general_info_lbl = Label(display_frame, text="", bg=df_bg, font=large_font)
@@ -213,7 +214,14 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
             preload_display.update_preloads(options["pre_min"], options["pre_max"])
 
             # Update M1 bounds
-            m1_display.update_bounds(options["m1_min"], options["m1_max"])
+            m1_display.update_all(m1min=options["m1_min"], m1max=options["m1_max"])
+
+            # Update block
+            if options["pat_id"] != frame.block.patID:
+                frame.block = block(patID=options["pat_id"], date=frame.block.date, 
+                    sess=options["sess"], blocknum=0)
+            else:
+                frame.block.session = options["sess"]
 
             # Update session value
             patient_info_lbl.configure(text=str(port) + " " + str(options["pat_id"]) + " " + str(options["sess"]))
