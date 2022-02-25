@@ -190,8 +190,10 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
 
         # Pause button flashing
         
-        # Log this?
-        assert frame.paused or frame.running
+        if not frame.paused and not frame.running:
+            print("Illegal state: not frame.paused and not frame.running. Corrected to frame.paused and not frame.running.")
+            logger.error("Illegal state: not frame.paused and not frame.running. Corrected to frame.paused and not frame.running.")
+            frame.paused = True
         if frame.paused:
             if frame.running:
                 # Running, but paused
