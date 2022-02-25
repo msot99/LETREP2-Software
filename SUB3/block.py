@@ -10,8 +10,8 @@ class block():
         self.trials = list()
 
     def compute_avg_success(self) -> None:
-        # TODO compute average success rate based off of data in trails
-        pass
+        if self.trials:
+            return sum([trl.success for trl in self.trials]) / len(self.trials)
 
     def number_of_trials(self):
         return len(self.trials)
