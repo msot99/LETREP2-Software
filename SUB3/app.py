@@ -4,7 +4,6 @@ from tkinter import *
 import time
 import random
 
-from cv2 import threshold
 from M1Display import M1Display
 
 from PreloadDisplay import PreloadDisplay
