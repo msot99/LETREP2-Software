@@ -47,8 +47,15 @@ def show_more_options(options):
     m1_min_entry.insert(0, str(options["m1_min"]))
     m1_min_entry.grid(row=5, column=1, sticky="w")
 
+    m1_thresh_label = Label(root, text="M1 Min:", bg="white", font=small_font)
+    m1_thresh_label.grid(row=6, column=0, sticky="e")
+
+    m1_thresh_entry = Entry(root, width=8)
+    m1_thresh_entry.insert(0, str(options["m1_thresh"]))
+    m1_thresh_entry.grid(row=6, column=1, sticky="w")
+
     sess_label = Label(root, text="Session #:", bg="white", font=small_font)
-    sess_label.grid(row=6, column=0, sticky="e")
+    sess_label.grid(row=7, column=0, sticky="e")
 
     sess_choice = IntVar(root)
     sess_choice.set(options["sess"])
@@ -60,7 +67,7 @@ def show_more_options(options):
     sess_selector = OptionMenu(
         root, sess_choice, *sess_list, command=sess_command)
     sess_selector.configure(width=5, anchor="w")
-    sess_selector.grid(row=6, column=1, sticky="w")
+    sess_selector.grid(row=7, column=1, sticky="w")
 
     tor_disp = BooleanVar(root)
     tor_disp.set(options["torque_display"])
@@ -69,7 +76,7 @@ def show_more_options(options):
         modified_options["torque_display"] = tor_disp.get()
     torque_disp_checkbox = Checkbutton(root, bg='white', text='Display Torque',
                                        variable=tor_disp, onvalue=True, offvalue=False, command=tor_disp_command)
-    torque_disp_checkbox.grid(row=7,column=0,columnspan=2)
+    torque_disp_checkbox.grid(row=8,column=0,columnspan=2)
 
 
     def exit():
@@ -90,10 +97,10 @@ def show_more_options(options):
     root.protocol("WM_DELETE_WINDOW", exit)
 
     ok_button = Button(root, text="Ok", command=ok, width=10, height=2)
-    ok_button.grid(row=8, column=0, sticky="e", padx=padx, pady=pady)
+    ok_button.grid(row=9, column=0, sticky="e", padx=padx, pady=pady)
 
     cancel_button = Button(root, text="Cancel", command=exit, width=10, height=2)
-    cancel_button.grid(row=8, column=1, sticky="w", padx=padx, pady=pady)
+    cancel_button.grid(row=9, column=1, sticky="w", padx=padx, pady=pady)
 
     center_window(root)
     # root.mainloop()
@@ -111,5 +118,6 @@ if __name__ == "__main__":
         "pre_min": 0.4,
         "m1_max": 0,
         "m1_min": 5,
+        "m1_thresh": 1.3,
         "torque_display": False
     })

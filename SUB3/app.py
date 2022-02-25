@@ -32,6 +32,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
         "pre_min": 0.4,
         "m1_max": 5,
         "m1_min": 0,
+        "m1_thresh": 1.3,
         "torque_display": False
     }
 
@@ -137,9 +138,8 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     
     preload_display.grid(row=3, column=3)
 
-    m1threshold = 1.3
     m1baseline = 1.5
-    m1_display = M1Display(display_frame, 100, 200, max=options["m1_max"], min=options["m1_min"], threshold=m1threshold, baseline=m1baseline, bg=df_bg)
+    m1_display = M1Display(display_frame, 100, 200, max=options["m1_max"], min=options["m1_min"], threshold=options["m1_thresh"], baseline=m1baseline, bg=df_bg)
 
     def show_preload_display():
         m1_display.grid_forget()
@@ -265,7 +265,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
             # TODO Update success_display to reflect success or failure
             position = random.random() * (m1_display.max - m1_display.min) * 0.7 + m1_display.min + (m1_display.max - m1_display.min) * 0.3
             show_m1display(position)
-            success_display.set_record(i, position < m1threshold)
+            success_display.set_record(i, position < options["m1_thresh"])
             i += 1
             if i == nw * nh:
                 i = 0
