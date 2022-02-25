@@ -9,13 +9,16 @@ class block():
         self.blocknum = blocknum
         self.trials = list()
     
-    def __init__(self, json):
+    def obj_from_json(self, json):
         self.patID = json['info']['patID']
         self.date = json['info']['date']
         self.session = json['info']['session']
         self.blocknum = json['info']['blocknum']
         self.avg_success = json['results']['avgsuccess']
-        self.trials = [trial(t) for t in list(json['trials'].values())]
+        self.trials = [trial().obj_from_json(t)
+                       for t in list(json['trials'].values())]
+
+        return self
 
     def compute_avg_success(self) -> None:
         # TODO compute average success rate based off of data in trails

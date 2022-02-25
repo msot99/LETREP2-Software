@@ -13,10 +13,12 @@ class trial():
             "mwave" - Patient failed by having too large a peak mwave
         """
 
-    def __init__(self,json):
+    def obj_from_json(self, json):
         self.emg_data = json['emgdata']
         self.success = json['success']
         self.peak = json['peakvalue']
         self.failure_reason = json['failure-reason']
         self.acc_data = json['accdata']
         self.max_delay_ms = json['maxdelayms']
+
+        return self

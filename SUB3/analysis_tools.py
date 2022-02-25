@@ -20,7 +20,7 @@ def open_json_files(directory):
         
         with open(f, "r") as json_file:
             jdict = json.load(json_file)
-            blk = block(jdict["block"])
+            blk = block().obj_from_json(jdict["block"])
             if blk.session in sessions.keys():
                 sessions[blk.session][blk.blocknum] = blk
             else:
