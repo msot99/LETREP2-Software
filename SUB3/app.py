@@ -8,8 +8,8 @@ from M1Display import M1Display
 
 from PreloadDisplay import PreloadDisplay
 from global_funcs import *
-from more_options import *
 from framework import framework
+from more_options import *
 import peak
 import matplotlib.pyplot as plt
 from SuccessRecordDisplay import SuccessRecordDisplay
@@ -55,19 +55,20 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     root.configure(bg="white")
     root.running = True
 
-    options = {
-        "updates": False,
-        "pat_id": pat_id,
-        "sess": sess,
-        "pre_max": 0.3,
-        "pre_min": 0.4,
-        "m1_max": 5,
-        "m1_min": 0,
-        "m1_thresh": 1.3,
-        "torque_display": False,
-        "show_emg": True,
-        "display_success": True
-    }
+    # options = {
+    #     "updates": False,
+    #     "pat_id": pat_id,
+    #     "sess": sess,
+    #     "pre_max": 0.3,
+    #     "pre_min": 0.4,
+    #     "m1_max": 5,
+    #     "m1_min": 0,
+    #     "m1_thresh": 1.3,
+    #     "torque_display": False,
+    #     "show_emg": True,
+    #     "display_success": True
+    # }
+    options = get_default_options()
 
     frame = None
 
