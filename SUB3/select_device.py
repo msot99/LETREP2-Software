@@ -13,7 +13,6 @@ def select_device():
 
     ports = serial.tools.list_ports.comports()
     port_names = [x[0] + ": " + x[1] for x in ports]
-    print(ports)
 
     img = Image.open(logo_dir)
     img = img.resize((250, 250), Image.ANTIALIAS)

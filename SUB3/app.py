@@ -1,28 +1,73 @@
-import datetime
+from datetime import datetime
+import os
 from tkinter import *
 import time
 import random
 
-from cv2 import threshold
 from M1Display import M1Display
 
 from PreloadDisplay import PreloadDisplay
 from global_funcs import *
 from more_options import *
 from framework import framework
+import peak
 import matplotlib.pyplot as plt
 from SuccessRecordDisplay import SuccessRecordDisplay
 from PIL import ImageTk, Image
+import logging
+
+# Displays the most recent trial using matplotlib
+def plot_emg(yacc, yemg):
+
+    yemg = yemg[400:800]
+    yacc = yacc[400:800]
+
+    _, ax = plt.subplots()
+    
+    ax.plot(yemg, 'r', label="EMG")
+    ax.legend(loc=2)
+    
+    ax2 = ax.twinx()
+    ax2.plot(yacc,'b', label="ACC")
+    ax2.legend(loc=1)
+
+    # Format plot
+    plt.title('Most Recent Trial Readings')
+    plt.ion()
+    plt.legend()
+    plt.show()
+    plt.pause(4)
+    plt.close()
 
 
 
 def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
+    
+    log_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop\\LETREP2\\Logs\\')
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+
+    logging.basicConfig(filename=log_dir+datetime.now().strftime('Run_%Y-%m-%d_%H-%M.log'), level=logging.DEBUG,
+                        format='%(asctime)s:%(filename)s:%(levelname)s:%(message)s')
+
 
     root = Tk()
     root.configure(bg="white")
     root.running = True
 
-    options = Options(port, pat_id, sess, pre_max=.3, pre_min=.4)
+    options = {
+        "updates": False,
+        "pat_id": pat_id,
+        "sess": sess,
+        "pre_max": 0.3,
+        "pre_min": 0.4,
+        "m1_max": 5,
+        "m1_min": 0,
+        "m1_thresh": 1.3,
+        "torque_display": False,
+        "show_emg": True,
+        "display_success": True
+    }
 
     frame = None
 
@@ -37,17 +82,17 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     logo = ImageTk.PhotoImage(img)
     logo_label = Label(root, image=logo, bg="white")
     logo_label.grid(row=0, column=0, padx=padx, pady=pady)
-
-    patient_info_lbl = Label(root, text=str(options.port) + " " + str(options.pat_id) + " " + str(options.sess))
-    patient_info_lbl.configure(bg="white")
+    
+    patient_info_lbl = Label(root, text="PatID " + str(options["pat_id"]) + "\nSession #" + str(options["sess"]))
+    patient_info_lbl.configure(bg="white", font=large_font)
     patient_info_lbl.grid(row=0, column=1)
 
     # Start, Pause, Trash, Stop, and Other button functions
     def on_start():
-        frame.start()
+        frame.start_block()
 
     def on_pause():
-        frame.pause()
+        frame.pause_block()
 
     def trash_prev():
         pass
@@ -56,7 +101,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
         show_more_options(options)
 
     def on_stop():
-        frame.stop()
+        frame.stop_block()
         general_info_lbl.configure(text="Stopped")
         general_info_lbl.last_updated = time.time()
         
@@ -76,6 +121,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     PAUSE_BLINK_RATE = .5
     pause_btn = Button(root, text="Pause Block", command=on_pause, width=big_w, height=big_h,
                        bg="red", font=button_font, fg=button_font_color)
+    pause_btn['state'] = 'disabled'
     pause_btn.grid(row=2, column=0, padx=padx, pady=pady)
 
     # trash_btn
@@ -86,6 +132,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     # stop_btn
     stop_btn = Button(root, text="Stop Block", command=on_stop, width=big_w, height=big_h,
                         bg="gray", font=button_font, fg=button_font_color)
+    stop_btn['state'] = 'disabled'
     stop_btn.grid(row=3, column=0, padx=padx, pady=pady)
 
     # other_opts_btn
@@ -99,8 +146,13 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     df_bg = "gray"
     display_frame = Frame(root, bg=df_bg, padx=padx, pady=pady)
 
-    df_title = Label(display_frame, text="Current Trial", bg=df_bg, font=small_font)
-    df_title.grid(row=0, column=0)
+    df_block = Label(display_frame, text="Current Block: N/A", 
+                     bg=df_bg, font=small_font)
+    df_block.grid(row=0, column=0)
+
+    df_trial = Label(display_frame, text="Current Trial: N/A",
+                     bg=df_bg, font=small_font)
+    df_trial.grid(row=0, column=1)
 
     df_torque = Label(display_frame, text="",
                      bg=df_bg, font=small_font)
@@ -111,7 +163,6 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
 
     nw = 15
     nh = 5
-    i = 0
     success_display = SuccessRecordDisplay(
         display_frame, 600, 220, nw, nh, margin=15, radius=15)
     success_display.grid(row=2, column=0, rowspan=2, columnspan=3)
@@ -120,23 +171,23 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     preload_lbl = Label(display_frame, text="Preload Status", bg=df_bg, font=small_font)
     preload_lbl.grid(row=2, column=3)
     
-    preload_display = PreloadDisplay(display_frame, 100, 200, options.pre_min, options.pre_max)
+    preload_display = PreloadDisplay(display_frame, 100, 200, options["pre_min"], options["pre_max"])
     
     preload_display.grid(row=3, column=3)
 
-    m1threshold = 1.3
-    m1display = M1Display(display_frame, 100, 200, max=2, min=0, threshold=m1threshold, baseline=1.5, bg=df_bg)
+    m1baseline = 1.5
+    m1_display = M1Display(display_frame, 100, 200, max=options["m1_max"], min=options["m1_min"], threshold=options["m1_thresh"], baseline=m1baseline, bg=df_bg)
 
     def show_preload_display():
-        m1display.grid_forget()
+        m1_display.grid_forget()
         preload_display.grid(row=3, column=3)
         preload_lbl.configure(text="Preload Status")
     
     def show_m1display(position):
         preload_display.grid_forget()
-        m1display.grid(row=3, column=3)
+        m1_display.grid(row=3, column=3)
         preload_lbl.configure(text="M1 Size")
-        m1display.update_position(position)
+        m1_display.update_all(m1min=options["m1_min"], m1max=options["m1_max"], pos=position)
 
     GI_CLEAR_TIME = 3
     general_info_lbl = Label(display_frame, text="", bg=df_bg, font=large_font)
@@ -151,8 +202,8 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     # End gui
 
     # To launch with no_motor and no_emg, run sign_in.py and hold shift while you press continue
-    frame = framework(options.port, patID=options.pat_id, sess=options.sess,
-                      premin=options.pre_min, premax=options.pre_max, no_motor=no_motor, no_emg=no_emg)
+    frame = framework(port, patID=options["pat_id"], sess=options["sess"],
+                      premin=options["pre_min"], premax=options["pre_max"], no_motor=no_motor, no_emg=no_emg)
     max = []
     center_window(root)
     while root.running:
@@ -164,7 +215,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
                 preload_display.update_data(torque_value)
                 
                 # Take a 20 sample rolling torque average
-                if options.torque_display:
+                if options["torque_display"]:
                     max.append(abs(torque_value))
                     max = max[-20:]
                     avg_torque = sum(max)/len(max)
@@ -175,41 +226,66 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
 
 
         # Pause button flashing
+        
+        if not frame.paused and not frame.running:
+            print("Illegal state: not frame.paused and not frame.running. Corrected to frame.paused and not frame.running.")
+            frame.paused = True
         if frame.paused:
-
-            other_opts_btn['state'] = 'normal'
-
-            if pause_btn_color_swap and time.time() - swap_time > PAUSE_BLINK_RATE:
-                pause_btn_color_swap = not pause_btn_color_swap
-                pause_btn.configure(bg="red")
-                swap_time = time.time()
-
-            elif not pause_btn_color_swap and time.time() - swap_time > PAUSE_BLINK_RATE:
-                pause_btn_color_swap = not pause_btn_color_swap
-                pause_btn.configure(bg="green")
-                swap_time = time.time()
-        else:
-            if not frame.running:
+            if frame.running:
+                # Running, but paused
                 other_opts_btn['state'] = 'normal'
+                start_btn['state'] = 'disabled'
+                pause_btn['state'] = 'normal'
+                stop_btn['state'] = 'normal'
+
+                if pause_btn_color_swap and time.time() - swap_time > PAUSE_BLINK_RATE:
+                    pause_btn_color_swap = not pause_btn_color_swap
+                    pause_btn.configure(bg="red")
+                    swap_time = time.time()
+
+                elif not pause_btn_color_swap and time.time() - swap_time > PAUSE_BLINK_RATE:
+                    pause_btn_color_swap = not pause_btn_color_swap
+                    pause_btn.configure(bg="green")
+                    swap_time = time.time()
             else:
-                other_opts_btn['state'] = 'disabled'
+                # Not running; stopped
+                other_opts_btn['state'] = 'normal'
+                start_btn['state'] = 'normal'
+                pause_btn['state'] = 'disabled'
+                stop_btn['state'] = 'disabled'
+
+                pause_btn.configure(bg="red")
+        else:
+            # Running, not paused
+            other_opts_btn['state'] = 'disabled'
+            start_btn['state'] = 'disabled'
+            pause_btn['state'] = 'normal'
+            stop_btn['state'] = 'normal'
 
             pause_btn.configure(bg="red")
 
         # Check for updates and then change values
-        if options.updates:
-            #Update preload values
-            frame.update_preloads(options.pre_min,options.pre_max)
-            preload_display.update_preloads(options.pre_min,options.pre_max)
+        if options["updates"]:
+            preload_display.update_preloads(options["pre_min"], options["pre_max"])
+            m1_display.update_all(m1min=options["m1_min"], m1max=options["m1_max"])
+            frame.update_options(options)
 
-            #Update session value
-            patient_info_lbl.configure(text=str(options.port) + " " + str(options.pat_id) + " " + str(options.sess))
-            options.updates = False
+            # Update session value
+            patient_info_lbl.configure(text="PatID " + str(options["pat_id"]) + "\nSession #" + str(options["sess"]))
+            options["updates"] = False
 
 
         # Check if a trial is just starting
         if frame.starting_trial:
+
+            df_trial.configure(text="Current Trial: " + str(frame.trial_count+1))
+            #Check if this is a first trial
+            if frame.trial_count == 0:
+                df_block.configure(text="Current Block: " + str(frame.block_count))
+                success_display.reset_all()
+
             show_preload_display()
+
             general_info_lbl.configure(text="Begin Preloading...")
             general_info_lbl.last_updated = time.time()
             frame.starting_trial = False
@@ -219,50 +295,42 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
             general_info_lbl.configure(text="")
 
         # This happens when after a trial
-        if frame.show_emg:
-            # TODO Update success_display to reflect success or failure
-            position = random.random() * (m1display.max - m1display.min) * 0.7 + m1display.min + (m1display.max - m1display.min) * 0.3
-            show_m1display(position)
-            success_display.set_record(i, position < m1threshold)
-            i += 1
-            if i == nw * nh:
-                i = 0
-                success_display.reset_all()
 
-            frame.show_emg = False
+        if frame.finished_trial:
             
-            if not no_emg:
-              yemg = frame.current_trial.emg_data
-              yacc = [sample / 3.0 for sample in frame.current_trial.acc_data]
+            # Remove DC Offset for finding peak
+            emg_dc_offset = sum(frame.current_trial.emg_data[0:400])/400
+            emg = [sample-emg_dc_offset for sample in frame.current_trial.emg_data]
 
+            # Find Peak
+            frame.current_trial.peak, frame.current_trial.max_delay_ms = peak.simple_peak(emg)
 
-              fig = plt.figure()
-              ax = fig.add_subplot(1, 1, 1)
-              ax.clear()
+            # Check if we are to show_emg
+            if options.show_emg:
+                plot_emg(frame.current_trial.acc_data, emg)          
 
-              ax.plot( yemg, 'r', label="EMG")
-              ax.plot( yacc, label="acc")
-              save = True
-              if save:
-                  current_date_and_time_string = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-                  extension = ".csv"
-                  file_name = str(frame.block.patID)+current_date_and_time_string + extension
-                  file = open(".\logs2\\"+file_name, 'w')
-                  x = 0
-                  for s in yemg:
-                      file.write(str(s)+","+str(yacc[x])+"\n")
-                      x+=1
-                  file.close()
+            # Update successs dispaly
+            if options.display_success:
+                # TODO Calculate success
+                position = random.random() * (m1_display.max - m1_display.min) * 0.7 + \
+                    m1_display.min + (m1_display.max - m1_display.min) * 0.3
+                show_m1display(position)
+                success_display.set_record(
+                    frame.trial_count, position < options["m1_threshold"])
+                frame.current_trial.success = position < options["m1_threshold"]
+                
+            else:
+                success_display.set_record(frame.trial_count, 3)
+            
+            # Reset trial bit
+            frame.finished_trial = False
 
-
-              # Format plot
-              plt.title('EMG Readings')
-              plt.ion()
-              plt.legend()
-              plt.show()
-              plt.pause(5)
-              plt.close()
+            # Check if we can do another trial
+            if frame.trial_count+1 == nw * nh :
+                logging.warning("Trial count meets success display limit... Ending block")
+                frame.stop_block()
            
+
         root.update()
 
 
