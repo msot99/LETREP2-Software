@@ -189,10 +189,15 @@ class framework():
                 while(time()-trial_start_time < 10):
                     sleep(.1)
 
-    # Update preload values
-    def update_preloads(self,pre_min, pre_max):
-        self.premin = pre_min
-        self.premax = pre_max
+    # Update for a change in options
+    def update_options(self, options):
+        self.premin = options["pre_min"]
+        self.premax = options["pre_max"]
+        if options["pat_id"] != self.block.patID:
+            self.block = block(patID=options["pat_id"], date=self.block.date, 
+                sess=options["sess"], blocknum=0)
+        else:
+            self.block.session = options["sess"]
 
     def new_block(self):
         self.block = self.block.copy_block()

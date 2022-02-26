@@ -1,4 +1,3 @@
-from asyncio.log import logger
 import datetime
 from tkinter import *
 import time
@@ -191,7 +190,6 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
         
         if not frame.paused and not frame.running:
             print("Illegal state: not frame.paused and not frame.running. Corrected to frame.paused and not frame.running.")
-            logger.error("Illegal state: not frame.paused and not frame.running. Corrected to frame.paused and not frame.running.")
             frame.paused = True
         if frame.paused:
             if frame.running:
@@ -229,19 +227,9 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
 
         # Check for updates and then change values
         if options["updates"]:
-            # Update preload values
-            frame.update_preloads(options["pre_min"], options["pre_max"])
             preload_display.update_preloads(options["pre_min"], options["pre_max"])
-
-            # Update M1 bounds
             m1_display.update_all(m1min=options["m1_min"], m1max=options["m1_max"])
-
-            # Update block
-            if options["pat_id"] != frame.block.patID:
-                frame.block = block(patID=options["pat_id"], date=frame.block.date, 
-                    sess=options["sess"], blocknum=0)
-            else:
-                frame.block.session = options["sess"]
+            frame.update_options(options)
 
             # Update session value
             patient_info_lbl.configure(text=str(port) + " " + str(options["pat_id"]) + " " + str(options["sess"]))

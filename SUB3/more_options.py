@@ -47,7 +47,7 @@ def show_more_options(options):
     m1_min_entry.insert(0, str(options["m1_min"]))
     m1_min_entry.grid(row=5, column=1, sticky="w")
 
-    m1_thresh_label = Label(root, text="M1 Min:", bg="white", font=small_font)
+    m1_thresh_label = Label(root, text="M1 Threshold:", bg="white", font=small_font)
     m1_thresh_label.grid(row=6, column=0, sticky="e")
 
     m1_thresh_entry = Entry(root, width=8)
@@ -79,27 +79,28 @@ def show_more_options(options):
     torque_disp_checkbox.grid(row=8,column=0,columnspan=2)
 
 
-    def exit():
+    def on_exit():
         root.running = False
         root.destroy()
 
-    def ok():
+    def on_ok():
         modified_options["pat_id"] = int(id_entry.get())
         modified_options["pre_min"] = float(pre_min_entry.get())
         modified_options["pre_max"] = float(pre_max_entry.get())
         modified_options["m1_max"] = float(m1_max_entry.get())
         modified_options["m1_min"] = float(m1_min_entry.get())
+        modified_options["m1_thresh"] = float(m1_thresh_entry.get())
         options.update(modified_options)
         options["updates"] = True
         print(options)
-        exit()
+        on_exit()
         
-    root.protocol("WM_DELETE_WINDOW", exit)
+    root.protocol("WM_DELETE_WINDOW", on_exit)
 
-    ok_button = Button(root, text="Ok", command=ok, width=10, height=2)
+    ok_button = Button(root, text="Ok", command=on_ok, width=10, height=2)
     ok_button.grid(row=9, column=0, sticky="e", padx=padx, pady=pady)
 
-    cancel_button = Button(root, text="Cancel", command=exit, width=10, height=2)
+    cancel_button = Button(root, text="Cancel", command=on_exit, width=10, height=2)
     cancel_button.grid(row=9, column=1, sticky="w", padx=padx, pady=pady)
 
     center_window(root)
