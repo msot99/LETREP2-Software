@@ -1,8 +1,11 @@
 from msilib.schema import CheckBox
 from tkinter import *
 from global_funcs import *
+import logging
+
 
 def show_more_options(options):
+    logging.debug("Displaying more options")
     root = Tk()
     root.running = True
     root.configure(bg="white")
@@ -78,6 +81,24 @@ def show_more_options(options):
                                        variable=tor_disp, onvalue=True, offvalue=False, command=tor_disp_command)
     torque_disp_checkbox.grid(row=8,column=0,columnspan=2)
 
+    emg_plot = BooleanVar(root)
+    emg_plot.set(options.show_emg)
+
+    def show_emg_command():
+        modified_options.show_emg = emg_plot.get()
+    emg_plot_checkbox = Checkbutton(root, bg='white', text='Plot Emg/Acc',
+                                    variable=emg_plot, onvalue=True, offvalue=False, command=show_emg_command)
+    emg_plot_checkbox.grid(row=7, column=0, columnspan=2)
+
+    suc_disp = BooleanVar(root)
+    suc_disp.set(options.display_success)
+
+    def suc_disp_command():
+        modified_options.display_success = suc_disp.get()
+    suc_disp_checkbox = Checkbutton(root, bg='white', text='Display Successes',
+                                    variable=suc_disp, onvalue=True, offvalue=False, command=suc_disp_command)
+    suc_disp_checkbox.grid(row=8, column=0, columnspan=2)
+
 
     def on_exit():
         root.running = False
@@ -101,6 +122,7 @@ def show_more_options(options):
     ok_button.grid(row=9, column=0, sticky="e", padx=padx, pady=pady)
 
     cancel_button = Button(root, text="Cancel", command=on_exit, width=10, height=2)
+    
     cancel_button.grid(row=9, column=1, sticky="w", padx=padx, pady=pady)
 
     center_window(root)

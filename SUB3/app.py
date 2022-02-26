@@ -1,4 +1,5 @@
-import datetime
+from datetime import datetime
+import os
 from tkinter import *
 import time
 import random
@@ -9,14 +10,46 @@ from PreloadDisplay import PreloadDisplay
 from global_funcs import *
 from more_options import *
 from framework import framework
-from block import block
+import peak
 import matplotlib.pyplot as plt
 from SuccessRecordDisplay import SuccessRecordDisplay
 from PIL import ImageTk, Image
+import logging
+
+# Displays the most recent trial using matplotlib
+def plot_emg(yacc, yemg):
+
+    yemg = yemg[400:800]
+    yacc = yacc[400:800]
+
+    _, ax = plt.subplots()
+    
+    ax.plot(yemg, 'r', label="EMG")
+    ax.legend(loc=2)
+    
+    ax2 = ax.twinx()
+    ax2.plot(yacc,'b', label="ACC")
+    ax2.legend(loc=1)
+
+    # Format plot
+    plt.title('Most Recent Trial Readings')
+    plt.ion()
+    plt.legend()
+    plt.show()
+    plt.pause(4)
+    plt.close()
 
 
 
 def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
+    
+    log_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop\\LETREP2\\Logs\\')
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+
+    logging.basicConfig(filename=log_dir+datetime.now().strftime('Run_%Y-%m-%d_%H-%M.log'), level=logging.DEBUG,
+                        format='%(asctime)s:%(filename)s:%(levelname)s:%(message)s')
+
 
     root = Tk()
     root.configure(bg="white")
@@ -47,17 +80,17 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     logo = ImageTk.PhotoImage(img)
     logo_label = Label(root, image=logo, bg="white")
     logo_label.grid(row=0, column=0, padx=padx, pady=pady)
-
-    patient_info_lbl = Label(root, text=str(port) + " " + str(options["pat_id"]) + " " + str(options["sess"]))
-    patient_info_lbl.configure(bg="white")
+    
+    patient_info_lbl = Label(root, text="PatID " + str(options.pat_id) + "\nSession #" + str(options.sess))
+    patient_info_lbl.configure(bg="white", font=large_font)
     patient_info_lbl.grid(row=0, column=1)
 
     # Start, Pause, Trash, Stop, and Other button functions
     def on_start():
-        frame.start()
+        frame.start_block()
 
     def on_pause():
-        frame.pause()
+        frame.pause_block()
 
     def trash_prev():
         pass
@@ -66,7 +99,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
         show_more_options(options)
 
     def on_stop():
-        frame.stop()
+        frame.stop_block()
         general_info_lbl.configure(text="Stopped")
         general_info_lbl.last_updated = time.time()
         
@@ -111,8 +144,13 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     df_bg = "gray"
     display_frame = Frame(root, bg=df_bg, padx=padx, pady=pady)
 
-    df_title = Label(display_frame, text="Current Trial", bg=df_bg, font=small_font)
-    df_title.grid(row=0, column=0)
+    df_block = Label(display_frame, text="Current Block: N/A", 
+                     bg=df_bg, font=small_font)
+    df_block.grid(row=0, column=0)
+
+    df_trial = Label(display_frame, text="Current Trial: N/A",
+                     bg=df_bg, font=small_font)
+    df_trial.grid(row=0, column=1)
 
     df_torque = Label(display_frame, text="",
                      bg=df_bg, font=small_font)
@@ -123,7 +161,6 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
 
     nw = 15
     nh = 5
-    i = 0
     success_display = SuccessRecordDisplay(
         display_frame, 600, 220, nw, nh, margin=15, radius=15)
     success_display.grid(row=2, column=0, rowspan=2, columnspan=3)
@@ -232,13 +269,21 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
             frame.update_options(options)
 
             # Update session value
-            patient_info_lbl.configure(text=str(port) + " " + str(options["pat_id"]) + " " + str(options["sess"]))
+            patient_info_lbl.configure(text="PatID " + str(options.pat_id) + "\nSession #" + str(options.sess))
             options["updates"] = False
 
 
         # Check if a trial is just starting
         if frame.starting_trial:
+
+            df_trial.configure(text="Current Trial: " + str(frame.trial_count+1))
+            #Check if this is a first trial
+            if frame.trial_count == 0:
+                df_block.configure(text="Current Block: " + str(frame.block_count))
+                success_display.reset_all()
+
             show_preload_display()
+
             general_info_lbl.configure(text="Begin Preloading...")
             general_info_lbl.last_updated = time.time()
             frame.starting_trial = False
@@ -248,50 +293,42 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
             general_info_lbl.configure(text="")
 
         # This happens when after a trial
-        if frame.show_emg:
-            # TODO Update success_display to reflect success or failure
-            position = random.random() * (m1_display.max - m1_display.min) * 0.7 + m1_display.min + (m1_display.max - m1_display.min) * 0.3
-            show_m1display(position)
-            success_display.set_record(i, position < options["m1_thresh"])
-            i += 1
-            if i == nw * nh:
-                i = 0
-                success_display.reset_all()
 
-            frame.show_emg = False
+        if frame.finished_trial:
             
-            if not no_emg:
-              yemg = frame.current_trial.emg_data
-              yacc = [sample / 3.0 for sample in frame.current_trial.acc_data]
+            # Remove DC Offset for finding peak
+            emg_dc_offset = sum(frame.current_trial.emg_data[0:400])/400
+            emg = [sample-emg_dc_offset for sample in frame.current_trial.emg_data]
 
+            # Find Peak
+            frame.current_trial.peak, frame.current_trial.max_delay_ms = peak.simple_peak(emg)
 
-              fig = plt.figure()
-              ax = fig.add_subplot(1, 1, 1)
-              ax.clear()
+            # Check if we are to show_emg
+            if options.show_emg:
+                plot_emg(frame.current_trial.acc_data, emg)          
 
-              ax.plot( yemg, 'r', label="EMG")
-              ax.plot( yacc, label="acc")
-              save = True
-              if save:
-                  current_date_and_time_string = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-                  extension = ".csv"
-                  file_name = str(frame.block.patID)+current_date_and_time_string + extension
-                  file = open(".\logs2\\"+file_name, 'w')
-                  x = 0
-                  for s in yemg:
-                      file.write(str(s)+","+str(yacc[x])+"\n")
-                      x+=1
-                  file.close()
+            # Update successs dispaly
+            if options.display_success:
+                # TODO Calculate success
+                position = random.random() * (m1display.max - m1display.min) * 0.7 + \
+                    m1display.min + (m1display.max - m1display.min) * 0.3
+                show_m1display(position)
+                success_display.set_record(
+                    frame.trial_count, position < m1threshold)
+                frame.current_trial.success = position < m1threshold
+                
+            else:
+                success_display.set_record(frame.trial_count, 3)
+            
+            # Reset trial bit
+            frame.finished_trial = False
 
-
-              # Format plot
-              plt.title('EMG Readings')
-              plt.ion()
-              plt.legend()
-              plt.show()
-              plt.pause(5)
-              plt.close()
+            # Check if we can do another trial
+            if frame.trial_count+1 == nw * nh :
+                logging.warning("Trial count meets success display limit... Ending block")
+                frame.stop_block()
            
+
         root.update()
 
 
