@@ -193,9 +193,6 @@ class framework():
                 self.current_trial.emg_data = trial_data[0]
                 self.current_trial.acc_data = trial_data[1]
 
-                # self.current_trial.peak = peak.simple_peak(self.current_trial)
-                # self.current_trial.peak = peak.wave_avg(self.current_trial)
-
                 # Process the data
                 self.trunkate_data()
                 
@@ -246,7 +243,7 @@ class framework():
         self.trial_count = -1
         self.block = self.block.copy_block()
 
-    def pause(self):
+    def pause_block(self):
         self.paused = not self.paused
         
     def stop_block(self):

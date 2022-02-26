@@ -302,18 +302,20 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
             emg_dc_offset = sum(frame.current_trial.emg_data[0:400])/400
             emg = [sample-emg_dc_offset for sample in frame.current_trial.emg_data]
 
-            # Find Peak
-            frame.current_trial.peak, frame.current_trial.max_delay_ms = peak.simple_peak(emg)
 
             # Check if we are to show_emg
-            if options.show_emg:
+            if options["show_emg"]:
                 plot_emg(frame.current_trial.acc_data, emg)          
 
-            # Update successs dispaly
-            if options.display_success:
-                # TODO Calculate success
+            # Update successs display
+            if options["display_success"]:
+                
+                frame.current_trial.peak, frame.current_trial.max_delay_ms = peak.condition_peak(
+                    emg)
+
                 position = random.random() * (m1_display.max - m1_display.min) * 0.7 + \
                     m1_display.min + (m1_display.max - m1_display.min) * 0.3
+
                 show_m1display(position)
                 success_display.set_record(
                     frame.trial_count, position < options["m1_threshold"])
@@ -321,6 +323,8 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
                 
             else:
                 success_display.set_record(frame.trial_count, 3)
+                frame.current_trial.peak, frame.current_trial.max_delay_ms = peak.base_peak(
+                    emg)
             
             # Reset trial bit
             frame.finished_trial = False

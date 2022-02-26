@@ -46,7 +46,7 @@ class analysis_app(Tk):
 
         self.plot_frame = Frame(self, )
         self.plot_frame.grid(
-            row=3, column=0, columnspan=4, rowspan=4, padx=padx, pady=pady+10)
+            row=4, column=0, columnspan=4, rowspan=4, padx=padx, pady=pady+10)
 
         # Browser frame and widgets
         self.browser_frame = Frame(self, )
