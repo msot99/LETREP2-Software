@@ -64,7 +64,9 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
         "m1_max": 5,
         "m1_min": 0,
         "m1_thresh": 1.3,
-        "torque_display": False
+        "torque_display": False,
+        "show_emg": True,
+        "display_success": True
     }
 
     frame = None
@@ -81,7 +83,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     logo_label = Label(root, image=logo, bg="white")
     logo_label.grid(row=0, column=0, padx=padx, pady=pady)
     
-    patient_info_lbl = Label(root, text="PatID " + str(options.pat_id) + "\nSession #" + str(options.sess))
+    patient_info_lbl = Label(root, text="PatID " + str(options["pat_id"]) + "\nSession #" + str(options["sess"]))
     patient_info_lbl.configure(bg="white", font=large_font)
     patient_info_lbl.grid(row=0, column=1)
 
@@ -269,7 +271,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
             frame.update_options(options)
 
             # Update session value
-            patient_info_lbl.configure(text="PatID " + str(options.pat_id) + "\nSession #" + str(options.sess))
+            patient_info_lbl.configure(text="PatID " + str(options["pat_id"]) + "\nSession #" + str(options["sess"]))
             options["updates"] = False
 
 
