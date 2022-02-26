@@ -40,7 +40,7 @@ class framework():
         self.running = False
 
         # This bit pauses the block
-        self.paused = False
+        self.paused = True
 
         # THis bit indicates trial ending
         self.finished_trial = False
@@ -142,7 +142,6 @@ class framework():
             self.starting_trial = True
 
             if not self.mot or not self.emg:
-
                 logging.info("Missing EMG or Motor, Skipping Trial")
                 self.current_trial = trial()
                 sleep(3.5)
@@ -201,6 +200,16 @@ class framework():
                 while(time()-trial_start_time < 10):
                     sleep(.1)
 
+    # Update for a change in options
+    def update_options(self, options):
+        self.premin = options["pre_min"]
+        self.premax = options["pre_max"]
+        if options["pat_id"] != self.block.patID:
+            self.block = block(patID=options["pat_id"], date=self.block.date, 
+                sess=options["sess"], blocknum=0)
+        else:
+            self.block.session = options["sess"]
+            
     # Processes emg data by trunkating and smoothing
     def trunkate_data(self):
 
@@ -225,24 +234,13 @@ class framework():
                                                                     500:fire_point+800]
 
 
-
-
-    # Update preload values
-    def update_preloads(self,pre_min, pre_max):
-        self.preload_min = pre_min
-        self.preload_max = pre_max
-        self.mot.update_preloads(self.preload_min, self.preload_max)
-
     def new_block(self):
         self.block_count+=1
         self.trial_count = -1
         self.block = self.block.copy_block()
 
-    def pause_block(self):
-        if self.paused:
-            self.paused= False
-        else:
-            self.paused= True
+    def pause(self):
+        self.paused = not self.paused
         
     def stop_block(self):
         self.running = False
