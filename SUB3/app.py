@@ -3,6 +3,9 @@ from tkinter import *
 import time
 import random
 
+from cv2 import threshold
+from M1Display import M1Display
+
 from PreloadDisplay import PreloadDisplay
 from global_funcs import *
 from more_options import *
@@ -116,9 +119,24 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
 
     preload_lbl = Label(display_frame, text="Preload Status", bg=df_bg, font=small_font)
     preload_lbl.grid(row=2, column=3)
+    
     preload_display = PreloadDisplay(display_frame, 100, 200, options.pre_min, options.pre_max)
+    
     preload_display.grid(row=3, column=3)
-    preload_display.configure(bg=df_bg)
+
+    m1threshold = 1.3
+    m1display = M1Display(display_frame, 100, 200, max=2, min=0, threshold=m1threshold, baseline=1.5, bg=df_bg)
+
+    def show_preload_display():
+        m1display.grid_forget()
+        preload_display.grid(row=3, column=3)
+        preload_lbl.configure(text="Preload Status")
+    
+    def show_m1display(position):
+        preload_display.grid_forget()
+        m1display.grid(row=3, column=3)
+        preload_lbl.configure(text="M1 Size")
+        m1display.update_position(position)
 
     GI_CLEAR_TIME = 3
     general_info_lbl = Label(display_frame, text="", bg=df_bg, font=large_font)
@@ -128,9 +146,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     display_frame.grid(row=1, column=1, rowspan=3, columnspan=3)
 
 
-    # root.geometry("1200x600")
     center_window(root)
-    torque_value = 0
 
     # End gui
 
@@ -193,6 +209,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
 
         # Check if a trial is just starting
         if frame.starting_trial:
+            show_preload_display()
             general_info_lbl.configure(text="Begin Preloading...")
             general_info_lbl.last_updated = time.time()
             frame.starting_trial = False
@@ -204,43 +221,47 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
         # This happens when after a trial
         if frame.show_emg:
             # TODO Update success_display to reflect success or failure
-            success_display.set_record(i, random.randint(0, 1))
+            position = random.random() * (m1display.max - m1display.min) * 0.7 + m1display.min + (m1display.max - m1display.min) * 0.3
+            show_m1display(position)
+            success_display.set_record(i, position < m1threshold)
             i += 1
             if i == nw * nh:
                 i = 0
                 success_display.reset_all()
 
             frame.show_emg = False
-            yemg = frame.current_trial.emg_data
-            yacc = [sample / 3.0 for sample in frame.current_trial.acc_data]
+            
+            if not no_emg:
+              yemg = frame.current_trial.emg_data
+              yacc = [sample / 3.0 for sample in frame.current_trial.acc_data]
 
 
-            fig = plt.figure()
-            ax = fig.add_subplot(1, 1, 1)
-            ax.clear()
+              fig = plt.figure()
+              ax = fig.add_subplot(1, 1, 1)
+              ax.clear()
 
-            ax.plot( yemg, 'r', label="EMG")
-            ax.plot( yacc, label="acc")
-            save = True
-            if save:
-                current_date_and_time_string = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-                extension = ".csv"
-                file_name = str(frame.block.patID)+current_date_and_time_string + extension
-                file = open(".\logs2\\"+file_name, 'w')
-                x = 0
-                for s in yemg:
-                    file.write(str(s)+","+str(yacc[x])+"\n")
-                    x+=1
-                file.close()
+              ax.plot( yemg, 'r', label="EMG")
+              ax.plot( yacc, label="acc")
+              save = True
+              if save:
+                  current_date_and_time_string = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+                  extension = ".csv"
+                  file_name = str(frame.block.patID)+current_date_and_time_string + extension
+                  file = open(".\logs2\\"+file_name, 'w')
+                  x = 0
+                  for s in yemg:
+                      file.write(str(s)+","+str(yacc[x])+"\n")
+                      x+=1
+                  file.close()
 
 
-            # Format plot
-            plt.title('EMG Readings')
-            plt.ion()
-            plt.legend()
-            plt.show()
-            plt.pause(5)
-            plt.close()
+              # Format plot
+              plt.title('EMG Readings')
+              plt.ion()
+              plt.legend()
+              plt.show()
+              plt.pause(5)
+              plt.close()
            
         root.update()
 
