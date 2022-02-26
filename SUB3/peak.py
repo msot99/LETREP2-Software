@@ -1,31 +1,42 @@
-def simple_peak(emg):
-    freq = 1925
-    wavelength = .005   
-    fire = 500
-    maximum=[0]
-    n=0
-    increase=False
 
-    max_samp = 0
+from scipy import signal
+freq=1925
 
-    if emg:
-        for j in range(fire,int((fire+(.085*1925)))):
-            if emg[j]>=maximum[n]:
-                if increase:
-                    maximum.append(emg[j])
-                    increase=False
-                    n+=1
-                else:
-                    maximum[n]=emg[j]
-                max_samp=j
-            elif j>(max_samp+((wavelength/2)*freq)):
-                increase=True
+def base_peak(emg):
 
-    peak=maximum[-1]
+    maxes=signal.find_peaks(emg, height=.15)[0]
 
-    # Calculate latency of max peak
-    max_delay_ms = (max_samp-500)/freq * 1000
+    peak=maxes[0]
+
+    sum=0
+    for i in range((peak-10),(peak+10)):
+        sum=sum+emg[i]
     
-    return peak, max_delay_ms
+    avg_peak=sum/20
+    peak_ms = (peak-500)/freq * 1000
+
+    return(avg_peak, peak_ms)
+
+
+def condition_peak(emg):
+    avg_time=36.36
+
+    M1_avg=int((avg_time*freq/1000)+500)
+
+    range_emg=emg[M1_avg-20:M1_avg+20]
+
+    maxes=signal.find_peaks(range_emg, height=.1)[0]
+
+    peak=maxes[0]
+    peak=peak+M1_avg
+
+    sum=0
+    for i in range((peak-10),(peak+10)):
+        sum=sum+emg[i]
+
+    avg_peak=sum/20
+    peak_ms = (peak-500)/freq * 1000
+
+    return(avg_peak, peak_ms)
 
 
