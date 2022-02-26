@@ -310,12 +310,12 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
             # Update successs dispaly
             if options.display_success:
                 # TODO Calculate success
-                position = random.random() * (m1display.max - m1display.min) * 0.7 + \
-                    m1display.min + (m1display.max - m1display.min) * 0.3
+                position = random.random() * (m1_display.max - m1_display.min) * 0.7 + \
+                    m1_display.min + (m1_display.max - m1_display.min) * 0.3
                 show_m1display(position)
                 success_display.set_record(
-                    frame.trial_count, position < m1threshold)
-                frame.current_trial.success = position < m1threshold
+                    frame.trial_count, position < options["m1_threshold"])
+                frame.current_trial.success = position < options["m1_threshold"]
                 
             else:
                 success_display.set_record(frame.trial_count, 3)
