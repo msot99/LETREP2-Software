@@ -13,6 +13,9 @@ from trial import trial
 from motor import motor
 from emg import emg
 from create_json import JSONmaker
+import scipy as sp
+from scipy import signal
+import peak
 
 
 
@@ -190,11 +193,15 @@ class framework():
                 self.current_trial.emg_data = trial_data[0]
                 self.current_trial.acc_data = trial_data[1]
 
+                # self.current_trial.peak = peak.simple_peak(self.current_trial)
+                # self.current_trial.peak = peak.wave_avg(self.current_trial)
+
                 # Process the data
                 self.trunkate_data()
                 
                 # Notify trial finished
                 self.finished_trial = True
+
 
                 self.block.trials.append(self.current_trial)
                 while(time()-trial_start_time < 10):
