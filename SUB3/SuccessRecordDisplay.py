@@ -15,7 +15,7 @@ class SuccessRecordDisplay(Canvas):
         self.height = height
 
         if colors is None:
-            self.colors = ["red", "green", "gray", "yellow"]
+            self.colors = ["red", "green", "gray", "yellow", "orange"]
         else:
             self.colors = colors
 
