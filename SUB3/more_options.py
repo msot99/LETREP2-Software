@@ -10,7 +10,8 @@ option_columns = [
             FloatOption("pre_min", "Preload Min:", 0.4),
             FloatOption("peak_min_threshold", "EMG Peak Threshold:", 0.06),
             FloatOption("avg_peak_delay", "EMG Peak Delay:", 42),
-            BooleanOption("display_success", "Display Success", True)
+            BooleanOption("display_success", "Display Success", True),
+            BooleanOption("preload_audio", "Preload Audio Notification", True)
         ],
         [
             FloatOption("m1_max", "M1 Max:", 5),
