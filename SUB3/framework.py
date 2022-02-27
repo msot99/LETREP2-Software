@@ -211,6 +211,8 @@ class framework():
     def update_options(self, options):
         self.premin = options["pre_min"]
         self.premax = options["pre_max"]
+        if self.mot:
+            self.mot.update_preloads(self.premin, self.premax)
         if options["pat_id"] != self.block.patID:
             self.block = block(patID=options["pat_id"], date=self.block.date, 
                 sess=options["sess"], blocknum=0)

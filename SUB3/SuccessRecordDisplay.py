@@ -7,7 +7,7 @@ from global_funcs import *
 
 class SuccessRecordDisplay(Canvas):
 
-    def __init__(self, root, width, height, nwidth, nheight, margin=10, radius=10, colors=None, *args, **kw):
+    def __init__(self, root, width, height, nwidth, nheight, margin=10, radius=10, colors=None, start_color=1, *args, **kw):
         super(SuccessRecordDisplay, self).__init__(root, width=width, height=height, *args, **kw)
         self._nwidth = nwidth
         self._nheight = nheight
@@ -20,7 +20,7 @@ class SuccessRecordDisplay(Canvas):
             self.colors = colors
 
         self._bg = self.create_rectangle(0, 0, width, height)
-        self.itemconfigure(self._bg, fill=self.colors[1], outline="")
+        self.itemconfigure(self._bg, fill=self.colors[start_color], outline="")
 
         self._margin = margin
         self._radius = radius
@@ -49,6 +49,10 @@ class SuccessRecordDisplay(Canvas):
     def reset_all(self):
         for i in range(self._nwidth * self._nheight):
             self.reset_record(i)
+    
+    def update_background(self, color_index):
+        self.itemconfigure(self._bg, fill=self.colors[color_index])
+
 
 def main():
     root = Tk()

@@ -155,7 +155,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     nw = 15
     nh = 5
     success_display = SuccessRecordDisplay(
-        display_frame, 600, 220, nw, nh, margin=15, radius=15)
+        display_frame, 600, 220, nw, nh, margin=15, radius=15, start_color=1 if options["display_success"] else 3)
     success_display.grid(row=2, column=0, rowspan=2, columnspan=3)
     success_display.configure(bg=df_bg)
 
@@ -260,6 +260,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
             preload_display.update_preloads(options["pre_min"], options["pre_max"])
             m1_display.update_all(m1min=options["m1_min"], m1max=options["m1_max"])
             frame.update_options(options)
+            success_display.update_background(1 if options["display_success"] else 3)
 
             # Update session value
             patient_info_lbl.configure(text="PatID " + str(options["pat_id"]) + "\nSession #" + str(options["sess"]))
