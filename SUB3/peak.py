@@ -29,17 +29,19 @@ def condition_peak(emg, peak_min_threshold, avg_time):
 
     range_emg=emg[M1_avg-20:M1_avg+20]
 
-    maxes = signal.find_peaks(range_emg, height=peak_min_threshold)[0]
+    maxes = list(signal.find_peaks(range_emg, height=peak_min_threshold)[0])
+    if maxes:
+        peak=maxes[0]
+        peak=peak+M1_avg
 
-    peak=maxes[0]
-    peak=peak+M1_avg
+        sum=0
+        for i in range((peak-10),(peak+10)):
+            sum=sum+emg[i]
 
-    sum=0
-    for i in range((peak-10),(peak+10)):
-        sum=sum+emg[i]
-
-    avg_peak=sum/20
-    peak_ms = (peak-500)/freq * 1000
+        avg_peak=sum/20
+        peak_ms = (peak-500)/freq * 1000
+    else:
+        return 0,0
 
     return(avg_peak, peak_ms)
 
