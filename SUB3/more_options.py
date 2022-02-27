@@ -48,7 +48,6 @@ def show_more_options(options):
 
     def on_exit():
         root.running = False
-        root.destroy()
 
     def on_ok():
         for collist in option_columns:
@@ -72,6 +71,7 @@ def show_more_options(options):
     # root.mainloop()
     while root.running:
         root.update()
+    root.destroy()
 
     
 

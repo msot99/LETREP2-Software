@@ -65,7 +65,6 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
 
     def on_closing():
         root.running = False
-        root.destroy()
         frame.exit()
     root.protocol("WM_DELETE_WINDOW", on_closing)
 
@@ -333,6 +332,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
            
 
         root.update()
+    root.destroy()
 
 
 if __name__ == "__main__":
