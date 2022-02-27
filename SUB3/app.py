@@ -3,6 +3,7 @@ import os
 from tkinter import *
 import time
 import random
+import winsound
 
 from M1Display import M1Display
 
@@ -267,6 +268,9 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
 
         # Check if a trial is just starting
         if frame.starting_trial:
+
+            wav_file = "C:\\Program Files\\LETREP2\\resources\\preload_notification.wav"
+            winsound.PlaySound(wav_file, winsound.SND_FILENAME | winsound.SND_ASYNC)
 
             df_trial.configure(text="Current Trial: " + str(frame.trial_count+1))
             #Check if this is a first trial
