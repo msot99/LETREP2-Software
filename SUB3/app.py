@@ -55,20 +55,9 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     root.configure(bg="white")
     root.running = True
 
-    # options = {
-    #     "updates": False,
-    #     "pat_id": pat_id,
-    #     "sess": sess,
-    #     "pre_max": 0.3,
-    #     "pre_min": 0.4,
-    #     "m1_max": 5,
-    #     "m1_min": 0,
-    #     "m1_thresh": 1.3,
-    #     "torque_display": False,
-    #     "show_emg": True,
-    #     "display_success": True
-    # }
+
     options = get_default_options()
+    options.update({"pat_id":pat_id, "sess": sess})
 
     frame = None
 
