@@ -1,4 +1,5 @@
 from datetime import datetime
+from multiprocessing import Process
 import os
 from tkinter import *
 import time
@@ -299,7 +300,9 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
 
             # Check if we are to show_emg
             if options["show_emg"]:
-                plot_emg(frame.current_trial.acc_data, emg)          
+                plot_thread = Process(
+                    target=plot_emg,args = (frame.current_trial.acc_data,emg,) )
+                plot_thread.start()
 
             # Update successs display
             if options["display_success"]:
