@@ -2,9 +2,10 @@
 from scipy import signal
 freq=1925
 
-def base_peak(emg):
 
-    maxes=list(signal.find_peaks(emg, height=.06)[0])
+def base_peak(emg, peak_min_threshold):
+
+    maxes = list(signal.find_peaks(emg, height=peak_min_threshold)[0])
 
     if maxes:
         peak=maxes[0]
@@ -22,14 +23,13 @@ def base_peak(emg):
     return(avg_peak, peak_ms)
 
 
-def condition_peak(emg):
-    avg_time=36.36
+def condition_peak(emg, peak_min_threshold, avg_time):
 
     M1_avg=int((avg_time*freq/1000)+500)
 
     range_emg=emg[M1_avg-20:M1_avg+20]
 
-    maxes=signal.find_peaks(range_emg, height=.1)[0]
+    maxes = signal.find_peaks(range_emg, height=peak_min_threshold)[0]
 
     peak=maxes[0]
     peak=peak+M1_avg

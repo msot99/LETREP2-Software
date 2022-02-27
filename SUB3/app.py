@@ -312,7 +312,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
             if options["display_success"]:
                 
                 frame.current_trial.peak, frame.current_trial.max_delay_ms = peak.condition_peak(
-                    emg)
+                    emg, options["peak_min_threshold"])
 
                 position = random.random() * (m1_display.max - m1_display.min) * 0.7 + \
                     m1_display.min + (m1_display.max - m1_display.min) * 0.3
@@ -325,7 +325,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
             else:
                 success_display.set_record(frame.trial_count, 3)
                 frame.current_trial.peak, frame.current_trial.max_delay_ms = peak.base_peak(
-                    emg)
+                    emg, options["peak_min_threshold"], options["avg_peak_delay"])
             
             # Reset trial bit
             frame.finished_trial = False
