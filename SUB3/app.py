@@ -59,7 +59,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
 
 
     options = get_default_options()
-    options.update({"pat_id":pat_id, "sess": sess})
+    options.update({"pat_id": pat_id, "sess": sess, "display_success": False if sess in [1,2,3] else True})
 
     frame = None
 

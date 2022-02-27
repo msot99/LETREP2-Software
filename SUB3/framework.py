@@ -145,11 +145,14 @@ class framework():
             self.starting_trial = True
 
             if not self.mot or not self.emg:
-                logging.info("Missing EMG or Motor, Skipping Trial")
+                logging.info("Missing EMG or Motor, Doing Fake Trial")
                 self.current_trial = trial()
-                sleep(3.5)
+                trial_start_time = time()
+                sleep(4)
                 self.finished_trial = True
-                sleep(1.5)
+                self.block.trials.append(self.current_trial)
+                while(time()-trial_start_time < 10):
+                    sleep(.1)
                 return
 
             if self.block:
