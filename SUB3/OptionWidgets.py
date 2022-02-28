@@ -43,7 +43,7 @@ class DropdownOption:
     def __init__(self, name, text, dropdown_list, default_value=None):
         self.name = name
         self.text = text
-        self.value = dropdown_list[default_value] if default_value else 0
+        self.value = default_value if default_value else 0
 
         self.options = dropdown_list
 
@@ -60,3 +60,14 @@ class DropdownOption:
     
     def get_value(self):
         return self._choice.get()
+
+class NoneOption:
+    def __init__(self):
+        self.name = "None"
+        self.value = 0
+
+    def grid(self, root, row, column):
+        pass
+
+    def get_value(self):
+        return 0

@@ -85,7 +85,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     def on_pause():
         frame.pause_block()
 
-    def trash_prev():
+    def on_trash_prev():
         pass
     
     def on_other_options():
@@ -116,7 +116,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     pause_btn.grid(row=2, column=0, padx=padx, pady=pady)
 
     # trash_btn
-    trash_btn = Button(root, text="Trash Prev\nResult", command=trash_prev, width=big_w, height=big_h,
+    trash_btn = Button(root, text="Trash Prev\nResult", command=on_trash_prev, width=big_w, height=big_h,
                        bg="blue", font=button_font, fg=button_font_color)
     trash_btn.grid(row=0, column=2)
 
@@ -310,13 +310,12 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
                 frame.current_trial.peak, frame.current_trial.max_delay_ms = peak.condition_peak(
                     emg, options["peak_min_threshold"],options["avg_peak_delay"])
 
-                position = random.random() * (m1_display.max - m1_display.min) * 0.7 + \
-                    m1_display.min + (m1_display.max - m1_display.min) * 0.3
+                m1_size = frame.current_trial.peak
 
-                show_m1display(position)
+                show_m1display(m1_size)
                 if frame.current_trial.success:
-                    success_display.set_record(frame.trial_count, position < options["m1_thresh"])
-                    frame.current_trial.success = position < options["m1_thresh"]
+                    success_display.set_record(frame.trial_count, m1_size < options["m1_thresh"])
+                    frame.current_trial.success = m1_size < options["m1_thresh"]
                 else:
                     # Handle preload failure
                     success_display.set_record(frame.trial_count, 4)

@@ -213,9 +213,9 @@ class framework():
         self.premax = options["pre_max"]
         if self.mot:
             self.mot.update_preloads(self.premin, self.premax)
-        if options["pat_id"] != self.block.patID:
+        if options["pat_id"] != self.block.patID or options["block_count"] != self.block_count:
             self.block = block(patID=options["pat_id"], date=self.block.date, 
-                sess=options["sess"], blocknum=0)
+                sess=options["sess"], blocknum=options["block_count"])
         else:
             self.block.session = options["sess"]
             

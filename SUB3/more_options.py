@@ -5,21 +5,22 @@ from OptionWidgets import *
 
 option_columns = [
         [
-            IntOption("pat_id", "Patient ID:", 1234),
             FloatOption("pre_max", "Preload Max:", 0.3),
             FloatOption("pre_min", "Preload Min:", 0.4),
             FloatOption("peak_min_threshold", "EMG Peak Threshold:", 0.06),
             FloatOption("avg_peak_delay", "EMG Peak Delay:", 42),
             BooleanOption("display_success", "Display Success", True),
-            BooleanOption("preload_audio", "Preload Audio Notification", True)
-        ],
-        [
-            FloatOption("m1_max", "M1 Max:", 5),
-            FloatOption("m1_min", "M1 Min:", 0),
-            FloatOption("m1_thresh", "M1 Threshold:", 1.3),
-            DropdownOption("sess", "Session #:", range(1, 16), 1),
+            BooleanOption("preload_audio", "Preload Audio Notification", True),
             BooleanOption("torque_display", "Display Torque", False),
             BooleanOption("show_emg", "Show EMG", True)
+        ],
+        [
+            FloatOption("m1_max", "M1 Max:", 0.1),
+            FloatOption("m1_min", "M1 Min:", 0),
+            FloatOption("m1_thresh", "M1 Threshold:", 1.3),
+            IntOption("pat_id", "Patient ID:", 1234),
+            DropdownOption("sess", "Session #:", range(1, 16), 1),
+            DropdownOption("block_count", "Block:", range(1, 14), 1)
         ]
     ]
 
@@ -32,19 +33,14 @@ def show_more_options(options):
     root.running = True
     root.configure(bg="white")
 
-    gridy = 0
-
     title_label = Label(root, text="More Options", bg="white", padx=padx, pady=pady, font=large_font)
-    title_label.grid(row=gridy, column=0, columnspan=2*len(option_columns))
-    gridy += 1
+    title_label.grid(row=0, column=0, columnspan=2*len(option_columns))
+    pre_column = 1
 
     for column, collist in enumerate(option_columns):
         for row, option in enumerate(collist):
             option.value = options[option.name]
-            option.grid(root, row+1, 2*column)
-            gridy = max(gridy, row+1)
-    
-    gridy += 1
+            option.grid(root, row+pre_column, 2*column)
 
 
     def on_exit():
@@ -60,13 +56,19 @@ def show_more_options(options):
         
     root.protocol("WM_DELETE_WINDOW", on_exit)
 
+    max_height = max([len(collist) for collist in option_columns])
+    ok_y = len(option_columns[-1])
+    rowspan = max(max_height - ok_y, 1)
+    ok_y += pre_column
+
     ok_button = Button(root, text="Ok", command=on_ok, width=10, height=2)
-    ok_button.grid(row=gridy, column=2*len(option_columns)-2, sticky="e", padx=padx, pady=pady)
+    ok_button.grid(row=ok_y, column=2*len(option_columns)-2, sticky="se", padx=padx, pady=pady, 
+        rowspan=rowspan)
 
     cancel_button = Button(root, text="Cancel", command=on_exit, width=10, height=2)
     
-    cancel_button.grid(row=gridy, column=2*len(option_columns)-1, sticky="w", padx=padx, pady=pady)
-    gridy += 1
+    cancel_button.grid(row=ok_y, column=2*len(option_columns)-1, sticky="sw", padx=padx, pady=pady,
+        rowspan=rowspan)
 
     center_window(root)
     # root.mainloop()
