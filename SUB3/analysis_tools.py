@@ -56,14 +56,19 @@ def sess_to_csv(sess, folder_name):
                 csv_file.write("\n")
 
 
-def avg_maxdelayms(sessions):
+def avg_base_sessions(sessions):
     maxdelayms_values = []
+    maxpeak_values = []
     num_of_trials = 0
     for sess in sessions.values():
         for blk in sess.values():
+            print(blk.blocknum)
             for trl in blk.trials:
                 num_of_trials+=1
                 maxdelayms_values.append(trl.max_delay_ms)
+                maxpeak_values.append(trl.peak)
 
-    return sum(maxdelayms_values)/num_of_trials
+
+
+    return sum(maxdelayms_values)/num_of_trials, sum(maxpeak_values)/ num_of_trials
 

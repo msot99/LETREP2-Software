@@ -5,10 +5,11 @@ freq=1925
 
 def base_peak(emg, peak_min_threshold):
 
-    maxes = list(signal.find_peaks(emg, height=peak_min_threshold)[0])
+    maxes = list(signal.find_peaks(emg[500:], height=peak_min_threshold)[0])
 
     if maxes:
         peak=maxes[0]
+        peak += 500
 
         sum=0
         for i in range((peak-10),(peak+10)):

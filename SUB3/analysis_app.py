@@ -40,9 +40,9 @@ class analysis_app(Tk):
         self.csv_btn.grid(row=2, column=0, padx=padx, pady=pady)
 
         # to csv Button
-        self.avg_ms_btn = Button(self, text="Find Average MS of base sessions", command=self.avg_ms_base, width=self.big_w, height=self.big_h,
+        self.avg_base_btn = Button(self, text="Find Average Key Components of Base Sessions", command=self.avg_base_sess, width=self.big_w, height=self.big_h,
                               bg="blue", font=button_font, fg=button_font_color)
-        self.avg_ms_btn.grid(row=3, column=0, padx=padx, pady=pady)
+        self.avg_base_btn.grid(row=3, column=0, padx=padx, pady=pady)
 
         self.plot_frame = Frame(self, )
         self.plot_frame.grid(
@@ -107,21 +107,22 @@ class analysis_app(Tk):
                 messagebox.showinfo(
                     "Sessions to CSV!", f"Converted {len(self.sessions)} session(s) to csv")
 
-    def avg_ms_base(self):
+    def avg_base_sess(self):
         base_sessions = {k: self.sessions[k] for k in (1,2,3) if k in self.sessions}
+        ms_avg, peak_avg = avg_base_sessions(base_sessions)
         messagebox.showinfo(
-            "Avg MS!", f"The average ms is {avg_maxdelayms(base_sessions)}")
+            "Avg Base!", f"The average ms is {ms_avg}\n The average peak is {peak_avg}")
     
     def run(self):
         while self.running:
             self.update()
             if self.sessions:
                 self.csv_btn["state"] = "normal"
-                self.avg_ms_btn["state"] = "normal"
+                self.avg_base_btn["state"] = "normal"
             else:
                 self.csv_btn["state"] = "disabled"
-                self.avg_ms_btn["state"] = "disabled"
-        
+                self.avg_base_btn["state"] = "disabled"
+
         # Close after finished stopping
         self.destroy()
 
