@@ -314,8 +314,8 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
 
                 show_m1display(m1_size)
                 if frame.current_trial.success:
-                    success_display.set_record(frame.trial_count, m1_size < options["m1_thresh"])
-                    frame.current_trial.success = m1_size < options["m1_thresh"]
+                    success_display.set_record(frame.trial_count, m1_size <= options["m1_thresh"])
+                    frame.current_trial.success = m1_size <= options["m1_thresh"]
                 else:
                     # Handle preload failure
                     success_display.set_record(frame.trial_count, 4)
