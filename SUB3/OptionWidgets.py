@@ -9,11 +9,11 @@ class FloatOption:
     
     def grid(self, root, row, column):
         self._lbl = Label(root, text=self.text, bg="white", font=small_font)
-        self._lbl.grid(row=row, column=column, sticky="e")
+        self._lbl.grid(row=row, column=column, sticky="ne")
 
         self._entry = Entry(root, width=8)
         self._entry.insert(0, str(self.value))
-        self._entry.grid(row=row, column=column+1, sticky="w")
+        self._entry.grid(row=row, column=column+1, sticky="nw")
 
     def get_value(self):
         return float(self._entry.get())
@@ -34,7 +34,7 @@ class BooleanOption:
 
         self._checkbutton = Checkbutton(root, text=self.text, bg='white',
                                        variable=self._disp, onvalue=True, offvalue=False)
-        self._checkbutton.grid(row=row, column=column, columnspan=2)
+        self._checkbutton.grid(row=row, column=column, columnspan=2, sticky="n")
 
     def get_value(self):
         return self._disp.get()
@@ -49,14 +49,14 @@ class DropdownOption:
 
     def grid(self, root, row, column):
         self._label = Label(root, text=self.text, bg="white", font=small_font)
-        self._label.grid(row=row, column=column, sticky="e")
+        self._label.grid(row=row, column=column, sticky="ne")
 
         self._choice = IntVar(root)
         self._choice.set(self.value)
 
         sess_selector = OptionMenu(root, self._choice, *self.options)
         sess_selector.configure(width=5, anchor="w")
-        sess_selector.grid(row=row, column=column+1, sticky="w")
+        sess_selector.grid(row=row, column=column+1, sticky="nw")
     
     def get_value(self):
         return self._choice.get()

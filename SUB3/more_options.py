@@ -32,19 +32,14 @@ def show_more_options(options):
     root.running = True
     root.configure(bg="white")
 
-    gridy = 0
-
     title_label = Label(root, text="More Options", bg="white", padx=padx, pady=pady, font=large_font)
-    title_label.grid(row=gridy, column=0, columnspan=2*len(option_columns))
-    gridy += 1
+    title_label.grid(row=0, column=0, columnspan=2*len(option_columns))
+    pre_column = 1
 
     for column, collist in enumerate(option_columns):
         for row, option in enumerate(collist):
             option.value = options[option.name]
-            option.grid(root, row+1, 2*column)
-            gridy = max(gridy, row+1)
-    
-    gridy += 1
+            option.grid(root, row+pre_column, 2*column)
 
 
     def on_exit():
@@ -60,13 +55,19 @@ def show_more_options(options):
         
     root.protocol("WM_DELETE_WINDOW", on_exit)
 
+    max_height = max([len(collist) for collist in option_columns])
+    ok_y = len(option_columns[-1])
+    rowspan = max_height - ok_y
+    ok_y += pre_column
+
     ok_button = Button(root, text="Ok", command=on_ok, width=10, height=2)
-    ok_button.grid(row=gridy, column=2*len(option_columns)-2, sticky="e", padx=padx, pady=pady)
+    ok_button.grid(row=ok_y, column=2*len(option_columns)-2, sticky="se", padx=padx, pady=pady, 
+        rowspan=rowspan)
 
     cancel_button = Button(root, text="Cancel", command=on_exit, width=10, height=2)
     
-    cancel_button.grid(row=gridy, column=2*len(option_columns)-1, sticky="w", padx=padx, pady=pady)
-    gridy += 1
+    cancel_button.grid(row=ok_y, column=2*len(option_columns)-1, sticky="sw", padx=padx, pady=pady,
+        rowspan=rowspan)
 
     center_window(root)
     # root.mainloop()
