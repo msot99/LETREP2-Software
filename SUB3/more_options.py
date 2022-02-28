@@ -5,7 +5,6 @@ from OptionWidgets import *
 
 option_columns = [
         [
-            IntOption("pat_id", "Patient ID:", 1234),
             FloatOption("pre_max", "Preload Max:", 0.3),
             FloatOption("pre_min", "Preload Min:", 0.4),
             FloatOption("peak_min_threshold", "EMG Peak Threshold:", 0.06),
@@ -16,11 +15,12 @@ option_columns = [
             BooleanOption("show_emg", "Show EMG", True)
         ],
         [
-            NoneOption(),
-            FloatOption("m1_max", "M1 Max:", 5),
+            FloatOption("m1_max", "M1 Max:", 0.1),
             FloatOption("m1_min", "M1 Min:", 0),
             FloatOption("m1_thresh", "M1 Threshold:", 1.3),
-            DropdownOption("sess", "Session #:", range(1, 16), 1)
+            IntOption("pat_id", "Patient ID:", 1234),
+            DropdownOption("sess", "Session #:", range(1, 16), 1),
+            DropdownOption("block_count", "Block:", range(1, 14), 1)
         ]
     ]
 
@@ -58,7 +58,7 @@ def show_more_options(options):
 
     max_height = max([len(collist) for collist in option_columns])
     ok_y = len(option_columns[-1])
-    rowspan = max_height - ok_y
+    rowspan = max(max_height - ok_y, 1)
     ok_y += pre_column
 
     ok_button = Button(root, text="Ok", command=on_ok, width=10, height=2)

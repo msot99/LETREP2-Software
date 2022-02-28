@@ -85,7 +85,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     def on_pause():
         frame.pause_block()
 
-    def trash_prev():
+    def on_trash_prev():
         pass
     
     def on_other_options():
@@ -116,7 +116,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     pause_btn.grid(row=2, column=0, padx=padx, pady=pady)
 
     # trash_btn
-    trash_btn = Button(root, text="Trash Prev\nResult", command=trash_prev, width=big_w, height=big_h,
+    trash_btn = Button(root, text="Trash Prev\nResult", command=on_trash_prev, width=big_w, height=big_h,
                        bg="blue", font=button_font, fg=button_font_color)
     trash_btn.grid(row=0, column=2)
 
