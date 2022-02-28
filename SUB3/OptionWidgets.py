@@ -60,3 +60,14 @@ class DropdownOption:
     
     def get_value(self):
         return self._choice.get()
+
+class NoneOption:
+    def __init__(self):
+        self.name = "None"
+        self.value = 0
+
+    def grid(self, root, row, column):
+        pass
+
+    def get_value(self):
+        return 0

@@ -310,13 +310,12 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
                 frame.current_trial.peak, frame.current_trial.max_delay_ms = peak.condition_peak(
                     emg, options["peak_min_threshold"],options["avg_peak_delay"])
 
-                position = random.random() * (m1_display.max - m1_display.min) * 0.7 + \
-                    m1_display.min + (m1_display.max - m1_display.min) * 0.3
+                m1_size = frame.current_trial.peak
 
-                show_m1display(position)
+                show_m1display(m1_size)
                 if frame.current_trial.success:
-                    success_display.set_record(frame.trial_count, position < options["m1_thresh"])
-                    frame.current_trial.success = position < options["m1_thresh"]
+                    success_display.set_record(frame.trial_count, m1_size < options["m1_thresh"])
+                    frame.current_trial.success = m1_size < options["m1_thresh"]
                 else:
                     # Handle preload failure
                     success_display.set_record(frame.trial_count, 4)

@@ -11,15 +11,16 @@ option_columns = [
             FloatOption("peak_min_threshold", "EMG Peak Threshold:", 0.06),
             FloatOption("avg_peak_delay", "EMG Peak Delay:", 42),
             BooleanOption("display_success", "Display Success", True),
-            BooleanOption("preload_audio", "Preload Audio Notification", True)
+            BooleanOption("preload_audio", "Preload Audio Notification", True),
+            BooleanOption("torque_display", "Display Torque", False),
+            BooleanOption("show_emg", "Show EMG", True)
         ],
         [
+            NoneOption(),
             FloatOption("m1_max", "M1 Max:", 5),
             FloatOption("m1_min", "M1 Min:", 0),
             FloatOption("m1_thresh", "M1 Threshold:", 1.3),
-            DropdownOption("sess", "Session #:", range(1, 16), 1),
-            BooleanOption("torque_display", "Display Torque", False),
-            BooleanOption("show_emg", "Show EMG", True)
+            DropdownOption("sess", "Session #:", range(1, 16), 1)
         ]
     ]
 
