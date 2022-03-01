@@ -258,7 +258,8 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
         # Check for updates and then change values
         if options["updates"]:
             preload_display.update_preloads(options["pre_min"], options["pre_max"])
-            m1_display.update_all(m1min=options["m1_min"], m1max=options["m1_max"])
+            m1_display.update_all(
+                m1min=options["m1_min"], m1max=options["m1_max"], threshold=options["m1_thresh"])
             frame.update_options(options)
             success_display.update_background(1 if options["display_success"] else 3)
 
