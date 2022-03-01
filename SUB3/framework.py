@@ -181,7 +181,7 @@ class framework():
                     failure_status = self.preload_randomizer(trial_start_time)
 
                 if not self.paused:
-                    self.current_trial.success = failure_status
+                    self.current_trial.success = not failure_status
                     self.fire(failure_status, trial_start_time)
                 else:
                     self.emg.stop_cont_collect()
