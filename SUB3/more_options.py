@@ -12,7 +12,7 @@ option_columns = [
             BooleanOption("display_success", "Display Success", True),
             BooleanOption("preload_audio", "Preload Audio Notification", True),
             BooleanOption("torque_display", "Display Torque", False),
-            BooleanOption("show_emg", "Show EMG", True)
+            BooleanOption("show_emg", "Show EMG", False)
         ],
         [
             FloatOption("m1_max", "M1 Max:", 0.1),
