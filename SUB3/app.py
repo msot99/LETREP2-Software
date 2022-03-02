@@ -4,6 +4,7 @@ import os
 from tkinter import *
 import time
 import random
+from tkinter import messagebox
 import winsound
 
 from M1Display import M1Display
@@ -19,7 +20,7 @@ from PIL import ImageTk, Image
 import logging
 
 # Displays the most recent trial using matplotlib
-def plot_emg(yacc, yemg):
+def plot_emg(yacc, yemg,v1 = None, v2 = None, h1 = None, duration = None):
 
     yemg = yemg[400:800]
     yacc = yacc[400:800]
@@ -28,6 +29,12 @@ def plot_emg(yacc, yemg):
     
     ax.plot(yemg, 'r', label="EMG")
     ax.legend(loc=2)
+
+    # Display vertical lines
+    if v1 and v2 and h1:
+        ax.axhline(h1)
+        ax.axvline(v1)
+        ax.axvline(v2)
     
     ax2 = ax.twinx()
     ax2.plot(yacc,'b', label="ACC")
@@ -38,8 +45,9 @@ def plot_emg(yacc, yemg):
     plt.ion()
     plt.legend()
     plt.show()
-    plt.pause(4)
-    plt.close()
+    if duration:
+        plt.pause(duration)
+        plt.close()
 
 
 
@@ -296,36 +304,56 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
             
             # Remove DC Offset for finding peak
             emg_dc_offset = sum(frame.current_trial.emg_data[0:400])/400
-            emg = [sample-emg_dc_offset for sample in frame.current_trial.emg_data]
+            emg = [sample-emg_dc_offset if sample -
+                    emg_dc_offset > 0 else 0 for sample in frame.current_trial.emg_data]
 
 
             # Check if we are to show_emg
             if options["show_emg"]:
                 plot_thread = Process(
-                    target=plot_emg,args = (frame.current_trial.acc_data,emg,) )
+                    target=plot_emg,args = (frame.current_trial.acc_data, emg, None, None, None, 4) )
                 plot_thread.start()
 
             # Update successs display
             if options["display_success"]:
                 
                 frame.current_trial.peak, frame.current_trial.max_delay_ms = peak.condition_peak(
-                    emg, options["peak_min_threshold"],options["avg_peak_delay"])
+                    emg,options["avg_peak_delay"])
 
-                m1_size = frame.current_trial.peak
+                # Add check for no peak found
+                if not (frame.current_trial.peak and frame.current_trial.max_delay_ms):
+                    frame.pause_block()
 
-                show_m1display(m1_size)
-                if frame.current_trial.success:
-                    success_display.set_record(frame.trial_count, m1_size <= options["m1_thresh"])
-                    frame.current_trial.success = m1_size <= options["m1_thresh"]
+                    M1_avg = int((options["avg_peak_delay"]*1925/1000)+500)
+                    plot_thread = Process(target=plot_emg,args = (frame.current_trial.acc_data, emg,  M1_avg - 20,  M1_avg + 20,  None,))
+                    plot_thread.start()
+                    
+                    retake_trial = messagebox.askyesno(
+                        "EMG Error", "Program failed to find a peak in specified range, retake trial?")
+                    
+                    if retake_trial:
+                        frame.retake_trial()
+
+                    
+
                 else:
-                    # Handle preload failure
-                    success_display.set_record(frame.trial_count, 4)
+
+
+                    m1_size = frame.current_trial.peak
+
+                    show_m1display(m1_size)
+                    if frame.current_trial.success:
+                        success_display.set_record(frame.trial_count, m1_size <= options["m1_thresh"])
+                        frame.current_trial.success = m1_size <= options["m1_thresh"]
+                    else:
+                        # Handle preload failure
+                        success_display.set_record(frame.trial_count, 4)
 
                 
             else:
                 success_display.set_record(frame.trial_count, 3)
                 frame.current_trial.peak, frame.current_trial.max_delay_ms = peak.base_peak(
-                    emg, options["peak_min_threshold"])
+                    emg)
             
             # Reset trial bit
             frame.finished_trial = False
