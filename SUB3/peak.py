@@ -33,7 +33,7 @@ def condition_peak(emg, avg_time):
     maxes = list(signal.find_peaks(range_emg, height=find_peak_min_thresh(emg))[0])
     if maxes:
         peak=maxes[0]
-        peak=peak+M1_avg
+        peak=peak+M1_avg-20
 
         sum=0
         for i in range((peak-10),(peak+10)):

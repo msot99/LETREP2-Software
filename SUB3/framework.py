@@ -137,6 +137,7 @@ class framework():
                         return self.preload_randomizer(trial_start_time)
 
     def retake_trial(self):
+        self.block.trials.pop(-1)
         self.trial_count -= 1
         self.pause_block()
 
