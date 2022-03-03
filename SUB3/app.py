@@ -44,10 +44,12 @@ def plot_emg(yacc, yemg,v1 = None, v2 = None, h1 = None, duration = None):
     plt.title('Most Recent Trial Readings')
     plt.ion()
     plt.legend()
-    plt.show()
     if duration:
+        plt.show()
         plt.pause(duration)
         plt.close()
+    else:
+        plt.show(block= True)
 
 
 
@@ -333,11 +335,9 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
                     
                     if retake_trial:
                         frame.retake_trial()
-
-                    
+       
 
                 else:
-
 
                     m1_size = frame.current_trial.peak
 

@@ -204,13 +204,13 @@ class framework():
 
                 # Process the data
                 self.trunkate_data()
-                
+
+                self.block.trials.append(self.current_trial)
+
                 # Notify trial finished
                 self.finished_trial = True
 
-
-                self.block.trials.append(self.current_trial)
-                while(time()-trial_start_time < 10):
+                while(time()-trial_start_time < 10 or self.finished_trial):
                     sleep(.1)
 
     # Update for a change in options
