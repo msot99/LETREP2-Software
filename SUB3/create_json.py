@@ -1,6 +1,25 @@
+from datetime import datetime
+import os
+import random
 from block import block
 from trial import trial
 import json
+
+
+def JSONTrialMaker(trialobject: trial, file):
+    jdict = {
+        "trial":
+                {"success": trialobject.success,
+                "failure-reason": trialobject.failure_reason,
+                "peakvalue": trialobject.peak,
+                "maxdelayms": trialobject.max_delay_ms,
+                "emgdata": trialobject.emg_data,
+                 "accdata": trialobject.acc_data
+                }
+            
+    }
+
+    json.dump(jdict, file, indent=4)
 
 
 def JSONmaker(blockobject: block, file):

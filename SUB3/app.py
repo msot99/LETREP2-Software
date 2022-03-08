@@ -9,6 +9,7 @@ import winsound
 
 from M1Display import M1Display
 
+from create_json import JSONTrialMaker
 from PreloadDisplay import PreloadDisplay
 from global_funcs import *
 from framework import framework
@@ -97,7 +98,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
 
     def on_trash_prev():
         pass
-    
+
     def on_other_options():
         show_more_options(options)
 
@@ -328,6 +329,13 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
                 # Add check for no peak found
                 if not (frame.current_trial.peak and frame.current_trial.max_delay_ms):
                     frame.pause_block()
+                    json_dir = os.path.join(os.path.join(
+                    os.environ['USERPROFILE']), f'Desktop\\LETREP2\\Logs\\')
+                    if not os.path.exists(json_dir):
+                        os.makedirs(json_dir)
+                    with open(json_dir+f'Failed Trial_{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.json', "w") as file:
+
+                        JSONTrialMaker(frame.current_trial, file)
 
                     M1_avg = int((options["avg_peak_delay"]*1925/1000)+500)
                     plot_thread = Process(target=plot_emg,args = (frame.current_trial.acc_data, emg,  M1_avg - 20,  M1_avg + 20,  None,))
