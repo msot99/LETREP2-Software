@@ -103,7 +103,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
         show_more_options(options)
 
     def on_stop():
-        new_thresh = frame.block.compute_avg_success()
+        new_thresh = frame.block.compute_avg_peak()
         options["m1_thresh"] = new_thresh
         options["updates"] = True
         frame.stop_block()
@@ -372,7 +372,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
             # Check if we can do another trial
             if frame.trial_count+1 == nw * nh :
                 logging.warning("Trial count meets success display limit... Ending block")
-                new_thresh = frame.block.compute_avg_success()
+                new_thresh = frame.block.compute_avg_peak()
                 options["m1_thresh"] = new_thresh
                 options["updates"] = True
                 frame.stop_block()

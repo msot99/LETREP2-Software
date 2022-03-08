@@ -20,9 +20,17 @@ class block():
 
         return self
 
-    def compute_avg_success(self) -> None:
+    def compute_avg_success(self):
         if self.trials:
             return sum([trl.success for trl in self.trials]) / len(self.trials)
+
+    def compute_avg_peak(self):
+        if self.trials:
+            sum_of_peaks = []
+            for trl in self.trials:
+                if trl.peak:
+                    sum_of_peaks.append(trl.peak)
+            return sum(sum_of_peaks) / len(sum_of_peaks)
 
     def number_of_trials(self):
         return len(self.trials)

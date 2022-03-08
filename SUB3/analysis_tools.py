@@ -62,7 +62,7 @@ def avg_base_sessions(sessions):
     num_of_trials = 0
     for sess in sessions.values():
         for blk in sess.values():
-            print(blk.blocknum)
+            print(blk.blocknum, blk.compute_avg_peak())
             for trl in blk.trials:
                 num_of_trials+=1
                 maxdelayms_values.append(trl.max_delay_ms)
