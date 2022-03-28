@@ -7,7 +7,7 @@ option_columns = [
         [
             FloatOption("pre_max", "Preload Max:", 0.3),
             FloatOption("pre_min", "Preload Min:", 0.4),
-            FloatOption("peak_min_threshold", "EMG Peak Threshold:", 0.06),
+            FloatOption("m1_baseline", "Baseline Average:", 0.08),
             FloatOption("avg_peak_delay", "EMG Peak Delay:", 42),
             BooleanOption("display_success", "Display Success", True),
             BooleanOption("preload_audio", "Preload Audio Notification", True),
@@ -17,7 +17,7 @@ option_columns = [
         [
             FloatOption("m1_max", "M1 Max:", 0.1),
             FloatOption("m1_min", "M1 Min:", 0),
-            FloatOption("m1_thresh", "M1 Threshold:", 1.3),
+            FloatOption("m1_noise_factor", "M1 Noise Factor:", 0.8),
             IntOption("pat_id", "Patient ID:", 1234),
             DropdownOption("sess", "Session #:", range(1, 16), 1),
             DropdownOption("block_count", "Block:", range(1, 14), 1)
