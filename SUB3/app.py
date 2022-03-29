@@ -70,7 +70,16 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
 
 
     options = get_default_options()
-    options.update({"pat_id": pat_id, "sess": sess, "display_success": False if sess in [1,2,3] else True})
+    options.update(
+        {
+            "pat_id": pat_id, 
+            "sess": sess, 
+            "display_success": False if sess in [1,2,3] else True,
+
+            # User settings
+            "m1_thresh": 0.06    # m1_thresh is not defined in more_options.py
+        }
+    )
 
     frame = None
 
@@ -280,7 +289,8 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
         if options["updates"]:
             preload_display.update_preloads(options["pre_min"], options["pre_max"])
             m1_display.update_all(
-                m1min=options["m1_min"], m1max=options["m1_max"], threshold=options["m1_thresh"])
+                m1min=options["m1_min"], m1max=options["m1_max"], 
+                threshold=options["m1_thresh"], baseline=options["m1_baseline"])
             frame.update_options(options)
             success_display.update_background(1 if options["display_success"] else 3)
 
@@ -336,7 +346,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
                     emg,options["avg_peak_delay"])
 
                 # Add check for no peak found
-                if not (frame.current_trial.peak and frame.current_trial.max_delay_ms):
+                if not (frame.current_trial.peak and frame.current_trial.max_delay_ms) and frame.emg:
                     frame.pause_block()
                     json_dir = os.path.join(os.path.join(
                     os.environ['USERPROFILE']), f'Desktop\\LETREP2\\Logs\\')
@@ -359,7 +369,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
 
                 else:
 
-                    m1_size = frame.current_trial.peak
+                    m1_size = frame.current_trial.peak if frame.emg else random.random() * (options["m1_max"] - options["m1_min"]) + options["m1_min"]
 
                     show_m1display(m1_size)
                     if frame.current_trial.success:
