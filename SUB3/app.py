@@ -104,7 +104,11 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
 
     def on_stop():
         new_thresh = frame.block.compute_avg_peak()
-        options["m1_thresh"] = new_thresh
+        messagebox.showinfo(
+            "M1 Threshold Update", f"Average M1 Peak From Previous Block: {new_thresh}\n New M1 Thresh: {.9*new_thresh}")
+        general_info_lbl.configure(text=f"Success Rate:{frame.block.compute_avg_success()*100:.2f}")
+        general_info_lbl.last_updated = time.time()
+        options["m1_thresh"] = new_thresh*.9
         options["updates"] = True
         frame.stop_block()
         general_info_lbl.configure(text="Stopped")
@@ -159,12 +163,15 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
                      bg=df_bg, font=small_font)
     df_trial.grid(row=0, column=1)
 
+
+    Num_of_success = 0
+    df_success = Label(display_frame, text="Number of Successes: N/A",
+                     bg=df_bg, font=small_font)
+    df_success.grid(row=0, column=2)
+
     df_torque = Label(display_frame, text="",
                      bg=df_bg, font=small_font)
     df_torque.grid(row=1, column=0)
-
-    df_failure_lbl = Label(display_frame, text="Failure Reason!!", bg=df_bg, font=small_font, fg="red")
-    df_failure_lbl.grid(row=1, column=0, columnspan=3)
 
     nw = 15
     nh = 5
@@ -294,6 +301,8 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
                 df_block.configure(text="Current Block: " + str(frame.block_count))
                 success_display.reset_all()
 
+                Num_of_success = 0
+
             show_preload_display()
 
             general_info_lbl.configure(text="Begin Preloading...")
@@ -337,8 +346,8 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
 
                         JSONTrialMaker(frame.current_trial, file)
 
-                    M1_avg = int((options["avg_peak_delay"]*1925/1000)+500)
-                    plot_thread = Process(target=plot_emg,args = (frame.current_trial.acc_data, emg,  M1_avg - 20,  M1_avg + 20,  None,))
+                    M1_avg = int((options["avg_peak_delay"]*1925/1000)+100)
+                    plot_thread = Process(target=plot_emg, args=(frame.current_trial.acc_data, emg,  M1_avg - 20,  M1_avg + 20, peak.find_peak_min_thresh(emg),  None,))
                     plot_thread.start()
                     
                     retake_trial = messagebox.askyesno(
@@ -356,6 +365,10 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
                     if frame.current_trial.success:
                         success_display.set_record(frame.trial_count, m1_size <= options["m1_thresh"])
                         frame.current_trial.success = m1_size <= options["m1_thresh"]
+                        if m1_size <= options["m1_thresh"]:
+                            Num_of_success +=1
+                            df_success.configure(
+                                text=f"Number of Successes: {Num_of_success}")
                     else:
                         # Handle preload failure
                         success_display.set_record(frame.trial_count, 4)
@@ -366,16 +379,21 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
                 frame.current_trial.peak, frame.current_trial.max_delay_ms = peak.base_peak(
                     emg)
             
-            # Reset trial bit
-            frame.finished_trial = False
 
             # Check if we can do another trial
             if frame.trial_count+1 == nw * nh :
                 logging.warning("Trial count meets success display limit... Ending block")
                 new_thresh = frame.block.compute_avg_peak()
-                options["m1_thresh"] = new_thresh
+                messagebox.showinfo(
+                    "M1 Threshold Update", f"Average M1 Peak From Previous Block: {new_thresh}\n New M1 Thresh: {.9*new_thresh}")
+                general_info_lbl.configure(text=f"Success Rate:{frame.block.compute_avg_success()*100:.2f}")
+                general_info_lbl.last_updated = time.time()
+                options["m1_thresh"] = .9*new_thresh
                 options["updates"] = True
                 frame.stop_block()
+            
+            # Reset trial bit
+            frame.finished_trial = False
            
 
         root.update()

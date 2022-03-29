@@ -1,3 +1,4 @@
+from tkinter import messagebox
 import clr
 
 
@@ -58,6 +59,14 @@ class emg:
         # scan for any available sensors
         self.TrigBase.ScanSensors().Result
         self.SensorsFound = len(self.TrigBase.ListSensorNames())
+        if not self.SensorsFound:
+            self.TrigBase.PairSensors()
+
+            messagebox.showinfo(
+                "Pair EMG!", f"No EMG Sensor Paired. Please touch the magnet to any sensor flashing Blue and Orange. When paired, the sensor should change colors")
+            self.TrigBase.ScanSensors().Result
+            self.SensorsFound = len(self.TrigBase.ListSensorNames())
+       
         self.TrigBase.ConnectSensors()
 
        # start the data stream from Sensors
