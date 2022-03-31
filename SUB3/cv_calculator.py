@@ -1,4 +1,5 @@
 
+import itertools
 from os import stat
 from time import sleep
 from tkinter.scrolledtext import ScrolledText
@@ -22,58 +23,126 @@ if folder_name != "":
         messagebox.showwarning(
             "Data Loading Error!", "Loaded Blocks Contain Differeing Patient IDs")
 
+    # The data pattern, [peak,max_delay_ms,succcess,pre_avg]
+    total_trls = [[],[],[],[]]
+
+    trials_output = [[""]]
+    trials_output[0].extend([f"Trial {x}" for x in range(1,81)])
+
+    session_output = [["Session"], ["Peak"], ["ms Delay"], ["Success"], ["Preload Avg"],["Preload StDev"]]
+    block_output = [[["","Block 1 Peaks", "ms Delay", "Success", "Preload Avg", "Preload StDev"]], 
+        [["","Block 2 Peaks", "ms Delay", "Success", "Preload Avg", "Preload StDev"]], 
+        [["","Block 3 Peaks", "ms Delay", "Success", "Preload Avg", "Preload StDev"]], 
+        [["","Block 4 Peaks", "ms Delay", "Success", "Preload Avg", "Preload StDev"]]]
+    trial_header_output = []
+
     for sess in sessions.values():
+        # The data pattern, [peak,max_delay_ms,succcess,pre_avg]
+        sess_data = [[], [], [], []]
         for blk in sess.values():
-            blk_trls_avg_pre = []
+            i = len(trials_output)
+
+            trials_output.extend([["Peak"],["ms Delay"],["Success"],["Preload AVG"],["Preload StDev"],[""]])
+
+            # The data pattern, [peak,max_delay_ms,succcess,pre_avg]
+            block_data = [[],[],[],[]]
             for trl in blk.trials:
+
                 trl.pre_avg = statistics.mean(trl.emg_data[0:400])
-                trl.pre_std = statistics.stdev(trl.emg_data[0:400])
-                blk_trls_avg_pre.append(trl.pre_avg)
-            
-            blk.pre_avg_std = statistics.stdev(blk_trls_avg_pre)
-            blk.pre_avg_avg = statistics.mean(blk_trls_avg_pre)
-
-            print(f"Sess {blk.session} Block {blk.blocknum}'s standard deviation of preload is {blk.pre_avg_std}")
-            print(f"Sess {blk.session} Block {blk.blocknum}'s mean of preload is {blk.pre_avg_avg}")
                 
+                trials_output[i].append(trl.peak)
+                trials_output[i+1].append(trl.max_delay_ms)
+                trials_output[i+2].append(trl.success)
+                trials_output[i+3].append(trl.pre_avg)
+                trials_output[i+4].append(statistics.stdev(trl.emg_data[0:400]))
+                trials_output[i+5].append("")
+
+                # Storing trial data for block
+                block_data[0].append(trl.peak)
+                block_data[1].append(trl.max_delay_ms)
+                block_data[2].append(trl.success)
+                block_data[3].append(trl.pre_avg)
+
+
+            # Copy data to session
+            for num, row in enumerate(sess_data):
+                row.extend(block_data[num])
             
+            block_output[blk.blocknum-1].append(["",statistics.mean(block_data[0]),
+                                               statistics.mean(block_data[1]),
+                                               statistics.mean(block_data[2]),
+                                               statistics.mean(block_data[3]),
+                                               statistics.stdev(block_data[3])])
+       
+
+        for num, blk in sess.items():
+            if num == 1:
+                session_output[0].append(blk.session)
+                session_output[1].append(statistics.mean(sess_data[0]))
+                session_output[2].append(statistics.mean(sess_data[1]))
+                session_output[3].append(statistics.mean(sess_data[2]))
+                session_output[4].append(statistics.mean(sess_data[3]))
+                session_output[5].append(statistics.stdev(sess_data[3]))
+            trial_header_output.extend(["Session", blk.session, "Block", blk.blocknum, "", ""])
+            
+        # Copy data to total    
+        for i, row in enumerate(total_trls):
+            row.extend(sess_data[i])    
+
+    # Transpose some arrays
+    session_output = list(
+        map(list, itertools.zip_longest(*session_output, fillvalue='"')))
+
+    trials_output = list(
+        map(list, itertools.zip_longest(*trials_output, fillvalue='"')))
+
+    
+    
+    for i in range(3):
+        block_output[3].insert(i+1,["","","","","",""])
+    
+    for index,row in enumerate(session_output):
+        for i in range(4):
+            if block_output[i][index]:
+                row.extend(block_output[i][index])
 
 
-    with open(join(folder_name, f"cv_calcs.csv"), "w") as csv_file:
+    # Create header
+    header_output = [[list(list(sessions.values())[0].values())[0].patID]]
+    header_output.append(["Success Rate Avg", statistics.mean(total_trls[2])])
+    header_output.append(["M1 avg height", statistics.mean(total_trls[0])])
+    header_output.append(["ms Max Delay", statistics.mean(total_trls[1])])
+    header_output.append(["Preload Avg", statistics.mean(total_trls[3])])
+    header_output.append(["Preload StDev", statistics.stdev(total_trls[3])])
+    
+    
+    with open(join(folder_name, f"{list(list(sessions.values())[0].values())[0].patID}.csv"), "w") as csv:
+
+        for i in header_output:
+            for j in i:
+                csv.write(f"{j},")
+            csv.write("\n")
+        csv.write("\n")
+
         
-        # Block header
-        csv_file.write(",")
-        for sess in sessions.values():
-            for blk in sess.values():
-                csv_file.write(f"Sess{blk.session} Block {blk.blocknum},,")
 
-        # Block value headers
-        csv_file.write("\n,")
-        for sess in sessions.values():
-            for blk in sess.values():
-                csv_file.write(f"Block preload avg, Block preload std,")
+        for i in session_output:
+            for j in i:
+                csv.write(f"{j},")
+            csv.write("\n")
+        csv.write("\n")
+        csv.write("\n")
 
-        # Block values
-        csv_file.write("\n,")
-        for sess in sessions.values():
-            for blk in sess.values():
-                csv_file.write(f"{blk.pre_avg_avg},{blk.pre_avg_std},")
-
-        csv_file.write("\n")
-        csv_file.write("Trials\n")
-
-        trials =[[x] for x in range(0, 80)]
-
-        for sess in sessions.values():
-            for blk in sess.values():
-                print(len(blk.trials))
-                for i,trl in enumerate(blk.trials):
-                    if trials[i]:
-                        trials[i].append(trl.pre_avg)
-                        trials[i].append(trl.pre_std)
-                
+        csv.write(",")
+        for j in trial_header_output:
+            csv.write(f"{j},")
+        csv.write("\n\n")
         
-        for row in trials:
-            for item in row:
-                csv_file.write(f"{item},")
-            csv_file.write("\n")
+
+        for i in trials_output:
+            for j in i:
+                if j != '"':
+                        csv.write(f"{j},")
+                else:
+                    csv.write(",")
+            csv.write("\n")
