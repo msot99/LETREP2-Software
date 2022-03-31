@@ -343,7 +343,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
             if options["display_success"]:
                 
                 frame.current_trial.peak, frame.current_trial.max_delay_ms = peak.condition_peak(
-                    emg,options["avg_peak_delay"])
+                    emg,options["avg_peak_delay"], options["m1_noise_factor"])
 
                 # Add check for no peak found
                 if not (frame.current_trial.peak and frame.current_trial.max_delay_ms) and frame.emg:
@@ -357,7 +357,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
                         JSONTrialMaker(frame.current_trial, file)
 
                     M1_avg = int((options["avg_peak_delay"]*1925/1000)+100)
-                    plot_thread = Process(target=plot_emg, args=(frame.current_trial.acc_data, emg,  M1_avg - 20,  M1_avg + 20, peak.find_peak_min_thresh(emg),  None,))
+                    plot_thread = Process(target=plot_emg, args=(frame.current_trial.acc_data, emg,  M1_avg - 20,  M1_avg + 20, peak.find_peak_min_thresh(emg, options["m1_noise_factor"]),  None,))
                     plot_thread.start()
                     
                     retake_trial = messagebox.askyesno(
@@ -387,7 +387,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
             else:
                 success_display.set_record(frame.trial_count, 3)
                 frame.current_trial.peak, frame.current_trial.max_delay_ms = peak.base_peak(
-                    emg)
+                    emg, options["m1_noise_factor"])
             
 
             # Check if we can do another trial

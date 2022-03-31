@@ -3,9 +3,9 @@ from scipy import signal
 freq=1925
 
 
-def base_peak(emg):
+def base_peak(emg,factor):
 
-    maxes = list(signal.find_peaks(emg[500:], height=find_peak_min_thresh(emg))[0])
+    maxes = list(signal.find_peaks(emg[500:], height=find_peak_min_thresh(emg, factor))[0])
 
     if maxes:
         peak=maxes[0]
@@ -24,13 +24,13 @@ def base_peak(emg):
     return(avg_peak, peak_ms)
 
 
-def condition_peak(emg, avg_time):
+def condition_peak(emg, avg_time,factor):
 
     M1_avg=int((avg_time*freq/1000)+500)
 
     range_emg=emg[M1_avg-20:M1_avg+20]
 
-    maxes = list(signal.find_peaks(range_emg, height=find_peak_min_thresh(emg))[0])
+    maxes = list(signal.find_peaks(range_emg, height=find_peak_min_thresh(emg,factor))[0])
     if maxes:
         peak=maxes[0]
         peak=peak+M1_avg-20
@@ -47,10 +47,9 @@ def condition_peak(emg, avg_time):
     return(avg_peak, peak_ms)
 
 
-def find_peak_min_thresh(emg):
+def find_peak_min_thresh(emg,factor):
     num = 5
     peaks = []
-    factor = 1.5
 
     peaks_pos = list(signal.find_peaks(emg[0:400], height=0)[0])
 
