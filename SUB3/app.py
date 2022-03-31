@@ -70,14 +70,18 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
 
 
     options = get_default_options()
+    # Give defaults for options not set in get_default_options before loading from file
+    options.update(
+        {
+            "m1_thresh": 0.06
+        }
+    )
+    options.update(load_options_from_file(pat_id))
     options.update(
         {
             "pat_id": pat_id, 
             "sess": sess, 
-            "display_success": False if sess in [1,2,3] else True,
-
-            # User settings
-            "m1_thresh": 0.06    # m1_thresh is not defined in more_options.py
+            "display_success": False if sess in [1,2,3] else True
         }
     )
 
