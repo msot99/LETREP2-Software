@@ -2,6 +2,7 @@ from tkinter import *
 from global_funcs import *
 import logging
 from OptionWidgets import *
+import os, json
 
 option_columns = [
         [
@@ -27,6 +28,22 @@ option_columns = [
 def get_default_options():
     return dict([(option.name, option.value) for collist in option_columns for option in collist] + [("updates", False)])
 
+def save_options_to_file(options):
+    pid_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Desktop\\LETREP2\\Data\\{options["pat_id"]}\\')
+    if not os.path.exists(pid_dir):
+        os.makedirs(pid_dir)
+    with open(pid_dir+'options.json', "w") as file:
+        json.dump(options, file)
+
+def load_options_from_file(pid):
+    pid_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Desktop\\LETREP2\\Data\\{pid}\\')
+    if not os.path.exists(pid_dir):
+        return {}
+    with open(pid_dir+'options.json', "r") as file:
+        return json.load(file)
+    return {}
+
+
 def show_more_options(options):
     logging.debug("Displaying more options")
     root = Tk()
@@ -50,6 +67,7 @@ def show_more_options(options):
         for collist in option_columns:
             for option in collist:
                 options[option.name] = option.get_value()
+        save_options_to_file(options)
         options["updates"] = True
         logging.info(options)
         on_exit()
