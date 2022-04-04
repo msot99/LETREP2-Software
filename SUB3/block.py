@@ -30,7 +30,9 @@ class block():
             for trl in self.trials:
                 if trl.peak:
                     sum_of_peaks.append(trl.peak)
-            return sum(sum_of_peaks) / len(sum_of_peaks)
+            if sum_of_peaks:
+                return sum(sum_of_peaks) / len(sum_of_peaks)
+        return 0
 
     def number_of_trials(self):
         return len(self.trials)
