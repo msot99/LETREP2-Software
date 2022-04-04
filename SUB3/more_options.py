@@ -36,10 +36,10 @@ def save_options_to_file(options):
         json.dump(options, file)
 
 def load_options_from_file(pid):
-    pid_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Desktop\\LETREP2\\Data\\{pid}\\')
+    pid_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Desktop\\LETREP2\\Data\\{pid}\\options.json')
     if not os.path.exists(pid_dir):
         return {}
-    with open(pid_dir+'options.json', "r") as file:
+    with open(pid_dir, "r") as file:
         return json.load(file)
     return {}
 

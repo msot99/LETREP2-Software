@@ -13,7 +13,7 @@ def open_json_files(directory):
 
     # Get only json files
     json_files = [join(directory,f) for f in listdir(directory) if isfile(
-        join(directory, f)) and splitext(join(directory, f))[1] == ".json"]
+        join(directory, f)) and splitext(join(directory, f))[1] == ".json" and f != "options.json" ]
 
     # Open all JSON files
     for f in json_files:

@@ -312,6 +312,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
             df_trial.configure(text="Current Trial: " + str(frame.trial_count+1))
             #Check if this is a first trial
             if frame.trial_count == 0:
+                options["block_count"] = frame.block_count
                 df_block.configure(text="Current Block: " + str(frame.block_count))
                 success_display.reset_all()
 

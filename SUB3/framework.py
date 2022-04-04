@@ -203,9 +203,11 @@ class framework():
                 self.current_trial.acc_data = trial_data[1]
 
                 # Process the data
-                self.trunkate_data()
+                self.truncate_data()
 
                 self.block.trials.append(self.current_trial)
+                print(f"Number of trials in block is {len(self.block.trials)}")
+                logging.info(f"Number of trials in block is {len(self.block.trials)}")
 
                 # Notify trial finished
                 self.finished_trial = True
@@ -226,7 +228,7 @@ class framework():
             self.block.session = options["sess"]
             
     # Processes emg data by trunkating and smoothing
-    def trunkate_data(self):
+    def truncate_data(self):
 
         #Average acc data
         acc_avg = sum(self.current_trial.acc_data[0:500])/500
@@ -261,6 +263,7 @@ class framework():
         self.running = False
         self.paused = True
         b = self.block
+        logging.info(f"Number of trials in block is {len(b.trials)}")
         json_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Desktop\\LETREP2\\Data\\{b.patID}\\')
         if not os.path.exists(json_dir):
             os.makedirs(json_dir)
