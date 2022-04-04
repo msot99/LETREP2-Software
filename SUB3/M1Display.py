@@ -62,10 +62,10 @@ class M1Display(Canvas):
         self.itemconfigure(self._bar, fill=color)
 
     def update_all(self, threshold=None, baseline=None, m1min=None, m1max=None, pos=None):
-        self.update_bounds(m1min if m1min else self.min, m1max if m1max else self.max)
-        self.update_threshold(threshold if threshold else self.threshold)
-        self.update_baseline(baseline if baseline else self.baseline)
-        self.update_position(pos if pos else self.pos)
+        self.update_bounds(m1min if m1min is not None else self.min, m1max if m1max else self.max)
+        self.update_threshold(threshold if threshold is not None else self.threshold)
+        self.update_baseline(baseline if baseline is not None else self.baseline)
+        self.update_position(pos if pos is not None else self.pos)
 
 
 

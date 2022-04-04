@@ -212,7 +212,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
         preload_display.grid_forget()
         m1_display.grid(row=3, column=3)
         preload_lbl.configure(text="M1 Size")
-        m1_display.update_all(m1min=options["m1_min"], m1max=options["m1_max"], pos=position)
+        m1_display.update_all(m1min=options["m1_min"], m1max=options["m1_max"], pos=position, threshold=options["m1_thresh"], baseline=options["m1_baseline"])
 
     GI_CLEAR_TIME = 3
     general_info_lbl = Label(display_frame, text="", bg=df_bg, font=large_font)
