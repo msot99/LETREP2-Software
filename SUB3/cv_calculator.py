@@ -103,9 +103,11 @@ if folder_name != "":
     
     for index,row in enumerate(session_output):
         for i in range(4):
-            if block_output[i][index]:
-                row.extend(block_output[i][index])
-
+            try:
+                if block_output[i][index]:
+                    row.extend(block_output[i][index])
+            except:
+                row.extend(["", "", "", "", "", ""])
 
     # Create header
     header_output = [[list(list(sessions.values())[0].values())[0].patID]]
