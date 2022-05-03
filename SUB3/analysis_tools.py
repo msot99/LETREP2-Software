@@ -13,7 +13,7 @@ def open_json_files(directory):
 
     # Get only json files
     json_files = [join(directory,f) for f in listdir(directory) if isfile(
-        join(directory, f)) and splitext(join(directory, f))[1] == ".json"]
+        join(directory, f)) and splitext(join(directory, f))[1] == ".json" and f != "options.json" ]
 
     # Open all JSON files
     for f in json_files:
@@ -55,4 +55,20 @@ def sess_to_csv(sess, folder_name):
                     csv_file.write(",")
                 csv_file.write("\n")
 
+
+def avg_base_sessions(sessions):
+    maxdelayms_values = []
+    maxpeak_values = []
+    num_of_trials = 0
+    for sess in sessions.values():
+        for blk in sess.values():
+            print(blk.blocknum, blk.compute_avg_peak())
+            for trl in blk.trials:
+                num_of_trials+=1
+                maxdelayms_values.append(trl.max_delay_ms)
+                maxpeak_values.append(trl.peak)
+
+
+
+    return sum(maxdelayms_values)/num_of_trials, sum(maxpeak_values)/ num_of_trials
 

@@ -136,6 +136,12 @@ class framework():
                     else:
                         return self.preload_randomizer(trial_start_time)
 
+    def retake_trial(self):
+        self.block.trials.pop(-1)
+        self.trial_count -= 1
+        self.pause_block()
+
+
     def take_trial(self):
         if self.paused:
            sleep(1) 
@@ -145,11 +151,14 @@ class framework():
             self.starting_trial = True
 
             if not self.mot or not self.emg:
-                logging.info("Missing EMG or Motor, Skipping Trial")
+                logging.info("Missing EMG or Motor, Doing Fake Trial")
                 self.current_trial = trial()
-                sleep(3.5)
+                trial_start_time = time()
+                sleep(4)
                 self.finished_trial = True
-                sleep(1.5)
+                self.block.trials.append(self.current_trial)
+                while(time()-trial_start_time < 10):
+                    sleep(.1)
                 return
 
             if self.block:
@@ -178,7 +187,7 @@ class framework():
                     failure_status = self.preload_randomizer(trial_start_time)
 
                 if not self.paused:
-                    self.current_trial.success = failure_status
+                    self.current_trial.success = not failure_status
                     self.fire(failure_status, trial_start_time)
                 else:
                     self.emg.stop_cont_collect()
@@ -193,32 +202,33 @@ class framework():
                 self.current_trial.emg_data = trial_data[0]
                 self.current_trial.acc_data = trial_data[1]
 
-                # self.current_trial.peak = peak.simple_peak(self.current_trial)
-                # self.current_trial.peak = peak.wave_avg(self.current_trial)
-
                 # Process the data
-                self.trunkate_data()
-                
+                self.truncate_data()
+
+                self.block.trials.append(self.current_trial)
+                print(f"Number of trials in block is {len(self.block.trials)}")
+                logging.info(f"Number of trials in block is {len(self.block.trials)}")
+
                 # Notify trial finished
                 self.finished_trial = True
 
-
-                self.block.trials.append(self.current_trial)
-                while(time()-trial_start_time < 10):
+                while(time()-trial_start_time < 10 or self.finished_trial):
                     sleep(.1)
 
     # Update for a change in options
     def update_options(self, options):
         self.premin = options["pre_min"]
         self.premax = options["pre_max"]
-        if options["pat_id"] != self.block.patID:
+        if self.mot:
+            self.mot.update_preloads(self.premin, self.premax)
+        if options["pat_id"] != self.block.patID or options["block_count"] != self.block_count:
             self.block = block(patID=options["pat_id"], date=self.block.date, 
-                sess=options["sess"], blocknum=0)
+                sess=options["sess"], blocknum=options["block_count"])
         else:
             self.block.session = options["sess"]
             
     # Processes emg data by trunkating and smoothing
-    def trunkate_data(self):
+    def truncate_data(self):
 
         #Average acc data
         acc_avg = sum(self.current_trial.acc_data[0:500])/500
@@ -246,13 +256,14 @@ class framework():
         self.trial_count = -1
         self.block = self.block.copy_block()
 
-    def pause(self):
+    def pause_block(self):
         self.paused = not self.paused
         
     def stop_block(self):
         self.running = False
         self.paused = True
         b = self.block
+        logging.info(f"Number of trials in block is {len(b.trials)}")
         json_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Desktop\\LETREP2\\Data\\{b.patID}\\')
         if not os.path.exists(json_dir):
             os.makedirs(json_dir)

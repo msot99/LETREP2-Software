@@ -1,15 +1,19 @@
 from datetime import datetime
+from multiprocessing import Process
 import os
 from tkinter import *
 import time
 import random
+from tkinter import messagebox
+import winsound
 
 from M1Display import M1Display
 
+from create_json import JSONTrialMaker
 from PreloadDisplay import PreloadDisplay
 from global_funcs import *
-from more_options import *
 from framework import framework
+from more_options import *
 import peak
 import matplotlib.pyplot as plt
 from SuccessRecordDisplay import SuccessRecordDisplay
@@ -17,7 +21,7 @@ from PIL import ImageTk, Image
 import logging
 
 # Displays the most recent trial using matplotlib
-def plot_emg(yacc, yemg):
+def plot_emg(yacc, yemg,v1 = None, v2 = None, h1 = None, duration = None):
 
     yemg = yemg[400:800]
     yacc = yacc[400:800]
@@ -26,6 +30,12 @@ def plot_emg(yacc, yemg):
     
     ax.plot(yemg, 'r', label="EMG")
     ax.legend(loc=2)
+
+    # Display vertical lines
+    if v1 and v2 and h1:
+        ax.axhline(h1)
+        ax.axvline(v1)
+        ax.axvline(v2)
     
     ax2 = ax.twinx()
     ax2.plot(yacc,'b', label="ACC")
@@ -35,9 +45,12 @@ def plot_emg(yacc, yemg):
     plt.title('Most Recent Trial Readings')
     plt.ion()
     plt.legend()
-    plt.show()
-    plt.pause(4)
-    plt.close()
+    if duration:
+        plt.show()
+        plt.pause(duration)
+        plt.close()
+    else:
+        plt.show(block= True)
 
 
 
@@ -55,25 +68,27 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     root.configure(bg="white")
     root.running = True
 
-    options = {
-        "updates": False,
-        "pat_id": pat_id,
-        "sess": sess,
-        "pre_max": 0.3,
-        "pre_min": 0.4,
-        "m1_max": 5,
-        "m1_min": 0,
-        "m1_thresh": 1.3,
-        "torque_display": False,
-        "show_emg": True,
-        "display_success": True
-    }
+
+    options = get_default_options()
+    # Give defaults for options not set in get_default_options before loading from file
+    options.update(
+        {
+            "m1_thresh": 0.06
+        }
+    )
+    options.update(load_options_from_file(pat_id))
+    options.update(
+        {
+            "pat_id": pat_id, 
+            "sess": sess, 
+            "display_success": False if sess in [1,2,3] else True
+        }
+    )
 
     frame = None
 
     def on_closing():
         root.running = False
-        root.destroy()
         frame.exit()
     root.protocol("WM_DELETE_WINDOW", on_closing)
 
@@ -94,13 +109,20 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     def on_pause():
         frame.pause_block()
 
-    def trash_prev():
+    def on_trash_prev():
         pass
-    
+
     def on_other_options():
         show_more_options(options)
 
     def on_stop():
+        new_thresh = frame.block.compute_avg_peak()
+        messagebox.showinfo(
+            "M1 Threshold Update", f"Average M1 Peak From Previous Block: {new_thresh}\n New M1 Thresh: {.9*new_thresh}")
+        general_info_lbl.configure(text=f"Success Rate:{frame.block.compute_avg_success()*100:.2f}")
+        general_info_lbl.last_updated = time.time()
+        options["m1_thresh"] = new_thresh*.9
+        options["updates"] = True
         frame.stop_block()
         general_info_lbl.configure(text="Stopped")
         general_info_lbl.last_updated = time.time()
@@ -125,7 +147,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     pause_btn.grid(row=2, column=0, padx=padx, pady=pady)
 
     # trash_btn
-    trash_btn = Button(root, text="Trash Prev\nResult", command=trash_prev, width=big_w, height=big_h,
+    trash_btn = Button(root, text="Trash Prev\nResult", command=on_trash_prev, width=big_w, height=big_h,
                        bg="blue", font=button_font, fg=button_font_color)
     trash_btn.grid(row=0, column=2)
 
@@ -154,17 +176,20 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
                      bg=df_bg, font=small_font)
     df_trial.grid(row=0, column=1)
 
+
+    Num_of_success = 0
+    df_success = Label(display_frame, text="Number of Successes: N/A",
+                     bg=df_bg, font=small_font)
+    df_success.grid(row=0, column=2)
+
     df_torque = Label(display_frame, text="",
                      bg=df_bg, font=small_font)
     df_torque.grid(row=1, column=0)
 
-    df_failure_lbl = Label(display_frame, text="Failure Reason!!", bg=df_bg, font=small_font, fg="red")
-    df_failure_lbl.grid(row=1, column=0, columnspan=3)
-
     nw = 15
     nh = 5
     success_display = SuccessRecordDisplay(
-        display_frame, 600, 220, nw, nh, margin=15, radius=15)
+        display_frame, 600, 220, nw, nh, margin=15, radius=15, start_color=1 if options["display_success"] else 3)
     success_display.grid(row=2, column=0, rowspan=2, columnspan=3)
     success_display.configure(bg=df_bg)
 
@@ -187,7 +212,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
         preload_display.grid_forget()
         m1_display.grid(row=3, column=3)
         preload_lbl.configure(text="M1 Size")
-        m1_display.update_all(m1min=options["m1_min"], m1max=options["m1_max"], pos=position)
+        m1_display.update_all(m1min=options["m1_min"], m1max=options["m1_max"], pos=position, threshold=options["m1_thresh"], baseline=options["m1_baseline"])
 
     GI_CLEAR_TIME = 3
     general_info_lbl = Label(display_frame, text="", bg=df_bg, font=large_font)
@@ -267,8 +292,11 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
         # Check for updates and then change values
         if options["updates"]:
             preload_display.update_preloads(options["pre_min"], options["pre_max"])
-            m1_display.update_all(m1min=options["m1_min"], m1max=options["m1_max"])
+            m1_display.update_all(
+                m1min=options["m1_min"], m1max=options["m1_max"], 
+                threshold=options["m1_thresh"], baseline=options["m1_baseline"])
             frame.update_options(options)
+            success_display.update_background(1 if options["display_success"] else 3)
 
             # Update session value
             patient_info_lbl.configure(text="PatID " + str(options["pat_id"]) + "\nSession #" + str(options["sess"]))
@@ -277,12 +305,18 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
 
         # Check if a trial is just starting
         if frame.starting_trial:
+            if options["preload_audio"]:
+                wav_file = "C:\\Program Files\\LETREP2\\resources\\preload_notification.wav"
+                winsound.PlaySound(wav_file, winsound.SND_FILENAME | winsound.SND_ASYNC)
 
             df_trial.configure(text="Current Trial: " + str(frame.trial_count+1))
             #Check if this is a first trial
             if frame.trial_count == 0:
+                options["block_count"] = frame.block_count
                 df_block.configure(text="Current Block: " + str(frame.block_count))
                 success_display.reset_all()
+
+                Num_of_success = 0
 
             show_preload_display()
 
@@ -300,38 +334,85 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
             
             # Remove DC Offset for finding peak
             emg_dc_offset = sum(frame.current_trial.emg_data[0:400])/400
-            emg = [sample-emg_dc_offset for sample in frame.current_trial.emg_data]
+            emg = [sample-emg_dc_offset if sample -
+                    emg_dc_offset > 0 else 0 for sample in frame.current_trial.emg_data]
 
-            # Find Peak
-            frame.current_trial.peak, frame.current_trial.max_delay_ms = peak.simple_peak(emg)
 
             # Check if we are to show_emg
-            if options.show_emg:
-                plot_emg(frame.current_trial.acc_data, emg)          
+            if options["show_emg"]:
+                plot_thread = Process(
+                    target=plot_emg,args = (frame.current_trial.acc_data, emg, None, None, None, 4) )
+                plot_thread.start()
 
-            # Update successs dispaly
-            if options.display_success:
-                # TODO Calculate success
-                position = random.random() * (m1_display.max - m1_display.min) * 0.7 + \
-                    m1_display.min + (m1_display.max - m1_display.min) * 0.3
-                show_m1display(position)
-                success_display.set_record(
-                    frame.trial_count, position < options["m1_threshold"])
-                frame.current_trial.success = position < options["m1_threshold"]
+            # Update successs display
+            if options["display_success"]:
+                
+                frame.current_trial.peak, frame.current_trial.max_delay_ms = peak.condition_peak(
+                    emg,options["avg_peak_delay"], options["m1_noise_factor"])
+
+                # Add check for no peak found
+                if not (frame.current_trial.peak and frame.current_trial.max_delay_ms) and frame.emg:
+                    frame.pause_block()
+                    json_dir = os.path.join(os.path.join(
+                    os.environ['USERPROFILE']), f'Desktop\\LETREP2\\Logs\\')
+                    if not os.path.exists(json_dir):
+                        os.makedirs(json_dir)
+                    with open(json_dir+f'Failed Trial_{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.json', "w") as file:
+
+                        JSONTrialMaker(frame.current_trial, file)
+
+                    M1_avg = int((options["avg_peak_delay"]*1925/1000)+100)
+                    plot_thread = Process(target=plot_emg, args=(frame.current_trial.acc_data, emg,  M1_avg - 20,  M1_avg + 20, peak.find_peak_min_thresh(emg, options["m1_noise_factor"]),  None,))
+                    plot_thread.start()
+                    
+                    retake_trial = messagebox.askyesno(
+                        "EMG Error", "Program failed to find a peak in specified range, retake trial?")
+                    
+                    if retake_trial:
+                        frame.retake_trial()
+       
+
+                else:
+
+                    m1_size = frame.current_trial.peak if frame.emg else random.random() * (options["m1_max"] - options["m1_min"]) + options["m1_min"]
+
+                    show_m1display(m1_size)
+                    if frame.current_trial.success:
+                        success_display.set_record(frame.trial_count, m1_size <= options["m1_thresh"])
+                        frame.current_trial.success = m1_size <= options["m1_thresh"]
+                        if m1_size <= options["m1_thresh"]:
+                            Num_of_success +=1
+                            df_success.configure(
+                                text=f"Number of Successes: {Num_of_success}")
+                    else:
+                        # Handle preload failure
+                        success_display.set_record(frame.trial_count, 4)
+
                 
             else:
                 success_display.set_record(frame.trial_count, 3)
+                frame.current_trial.peak, frame.current_trial.max_delay_ms = peak.base_peak(
+                    emg, options["m1_noise_factor"])
             
-            # Reset trial bit
-            frame.finished_trial = False
 
             # Check if we can do another trial
             if frame.trial_count+1 == nw * nh :
                 logging.warning("Trial count meets success display limit... Ending block")
+                new_thresh = frame.block.compute_avg_peak()
+                messagebox.showinfo(
+                    "M1 Threshold Update", f"Average M1 Peak From Previous Block: {new_thresh}\n New M1 Thresh: {.9*new_thresh}")
+                general_info_lbl.configure(text=f"Success Rate:{frame.block.compute_avg_success()*100:.2f}")
+                general_info_lbl.last_updated = time.time()
+                options["m1_thresh"] = .9*new_thresh
+                options["updates"] = True
                 frame.stop_block()
+            
+            # Reset trial bit
+            frame.finished_trial = False
            
 
         root.update()
+    root.destroy()
 
 
 if __name__ == "__main__":
