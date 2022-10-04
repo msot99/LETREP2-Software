@@ -131,16 +131,16 @@ class motor:
 
             time.sleep(.01)
 
-    def torque_preload_check(self):
+    def torque_preload_check(self, emgV):
         """
         Checks the motors torque:
         Returns 1 if force is greater than preload_max
         Return 0 if good
         Returens -1 if force is less than preload_min
         """
-        if self.torque_value < self._preload_max:
+        if emgV < self._preload_max:
             return 1
-        elif self.torque_value > self._preload_min:
+        elif emgV > self._preload_min:
             return -1
         else:
             return 0
