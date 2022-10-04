@@ -235,7 +235,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
         # Update preload display
         if frame.mot:
             if frame.mot.torque_update:
-                torque_value = frame.trial_data[0][-1]      # temporary fix
+                torque_value = frame.mot.torque_value
                 frame.mot.torque_update = False
                 preload_display.update_data(torque_value)
                 

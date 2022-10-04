@@ -178,7 +178,7 @@ class framework():
                     sleep(.1)
                     if time()-trial_start_time > 1.25:
                         break
-                    if self.mot.torque_preload_check(sum(trial_data[0][-20:])/20) != 0:    # take the last twenty values of emg value array; average; pass to preload check 
+                    if self.mot.torque_preload_check() != 0:
                         failure_status = self.preload_failure_handler(trial_start_time)
                         break
 
