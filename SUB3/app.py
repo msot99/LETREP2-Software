@@ -52,7 +52,7 @@ def plot_emg(yacc, yemg,v1 = None, v2 = None, h1 = None, duration = None):
     else:
         plt.show(block= True)
 
-
+#
 
 def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     
