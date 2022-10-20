@@ -165,6 +165,8 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
 
     # Display Frame: widget to hold preload and record displays
     # display_frame
+
+    # Large GRAY background: keep
     df_bg = "gray"
     display_frame = Frame(root, bg=df_bg, padx=padx, pady=pady)
 
@@ -186,6 +188,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
                      bg=df_bg, font=small_font)
     df_torque.grid(row=1, column=0)
 
+# success baubles: keep
     nw = 15
     nh = 5
     success_display = SuccessRecordDisplay(
@@ -193,9 +196,10 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     success_display.grid(row=2, column=0, rowspan=2, columnspan=3)
     success_display.configure(bg=df_bg)
 
+# preload display: keep
     preload_lbl = Label(display_frame, text="Preload Status", bg=df_bg, font=small_font)
     preload_lbl.grid(row=2, column=3)
-    
+
     preload_display = PreloadDisplay(display_frame, 100, 200, options["pre_min"], options["pre_max"])
     
     preload_display.grid(row=3, column=3)
