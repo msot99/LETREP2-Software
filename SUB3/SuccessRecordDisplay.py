@@ -81,6 +81,8 @@ class ControlSuccessRecordDisplay(Canvas):
         r = 0
         c = 0
         for i in range(nwidth * nheight):
+
+           # if (nwidth * nheight) <= 30:
             x = margin + c * (width  - margin * 2 - radius * 2) / (nwidth  - 1)
             y = margin + r * (height - margin * 2 - radius * 2) / (nheight - 1)
             record = self.create_oval(x, y, x + 2 * radius, y + 2 * radius)
