@@ -198,10 +198,11 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
 # success baubles: keep
     nw = 15
     nh = 5
-    success_display = SuccessRecordDisplay(
+    success_display = ControlSuccessRecordDisplay(
         display_frame, 600, 220, nw, nh, margin=15, radius=15, start_color=1 if options["display_success"] else 3)
     success_display.grid(row=2, column=0, rowspan=2, columnspan=3)
     success_display.configure(bg=df_bg)
+
 
 # preload display: keep
     preload_lbl = Label(display_frame, text="Preload Status", bg=df_bg, font=small_font)
