@@ -98,6 +98,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     logo_label = Label(root, image=logo, bg="white")
     logo_label.grid(row=0, column=0, padx=padx, pady=pady)
     
+    #patient ID label
     patient_info_lbl = Label(root, text="PatID " + str(options["pat_id"]) + "\nSession #" + str(options["sess"]))
     patient_info_lbl.configure(bg="white", font=large_font)
     patient_info_lbl.grid(row=0, column=1)
@@ -115,6 +116,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     def on_other_options():
         show_more_options(options)
 
+    #Updates M1 delay. Needed for baseline.
     def on_stop():
         new_thresh = frame.block.compute_avg_peak()
         messagebox.showinfo(
