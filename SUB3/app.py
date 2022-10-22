@@ -17,7 +17,6 @@ from more_options import *
 import peak
 import matplotlib.pyplot as plt
 from SuccessRecordDisplay import SuccessRecordDisplay
-from BaselineMaxDisplay import BaselineMaxDisplay
 from PIL import ImageTk, Image
 import logging
 

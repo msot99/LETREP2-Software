@@ -140,6 +140,7 @@ class motor:
         Return 0 if good
         Returens -1 if force is less than preload_min
         """
+        #checks emg val instead now
         self._display_emgV = self._preload_emgV[-1] #because app doesn't like list[-1]
         if self._preload_emgV[-1] < self._preload_max:
             return 1
