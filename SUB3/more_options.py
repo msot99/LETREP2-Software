@@ -6,8 +6,8 @@ import os, json
 
 option_columns = [
         [
-            FloatOption("pre_max", "Preload Max:", 0.3),
-            FloatOption("pre_min", "Preload Min:", 0.4),
+            FloatOption("pre_max", "Preload Max:", 95), #revise for possible negative inputs premax & min
+            FloatOption("pre_min", "Preload Min:", 85), # <-- default values for premax and min
             FloatOption("m1_baseline", "Baseline Average:", 0.08),
             FloatOption("avg_peak_delay", "EMG Peak Delay:", 42),
             BooleanOption("display_success", "Display Success", True),
@@ -70,6 +70,8 @@ def show_more_options(options):
         save_options_to_file(options)
         options["updates"] = True
         logging.info(options)
+        max_pre=(options["pre_max"] -100)/(-200) # to allow the user to input premax & premin values of 0-100
+        min_pre = (options["pre_min"]-100)/(-200) # premax and premin are then converted so code works from values 0-100 to 1/2(min)-0(max)
         on_exit()
         
     root.protocol("WM_DELETE_WINDOW", on_exit)
