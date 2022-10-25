@@ -69,6 +69,7 @@ class framework():
 
     def fire(self, failure, trial_start_time):
 
+        #where is it logged? can we grab emg sample point when this fn is called?
         logging.info("FIRE! "+str( time()-trial_start_time)+ "  Failure:"+str( failure))
         self.mot.fire()
         sleep(1.5)
@@ -92,7 +93,7 @@ class framework():
             if time()-trial_start_time >= 5:
                 return True
 
-             # Check if out of torque limits
+             # Check if out of torque (now EMG) limits
             
             if self.mot.torque_preload_check() != 0:
 
@@ -118,7 +119,7 @@ class framework():
             if time()-random_fire_time > 0:
                 return False
 
-            # Check if out of torque limits
+            # Check if out of torque (EMG) limits
             if self.mot.torque_preload_check() != 0:
                 # Check if out of time for Failure Handler
                 if time()-trial_start_time > 4:
@@ -142,7 +143,7 @@ class framework():
         self.trial_count -= 1
         self.pause_block()
 
-
+    #this fn does preload and trials proper, with failure handling:
     def take_trial(self):
         if self.paused:
            sleep(1) 
@@ -167,8 +168,9 @@ class framework():
                 
                 self.current_trial = trial()
                 trial_start_time = time()
-                trial_data = [[],[]]
+                trial_data = [[],[]] #this array of 2 arrays receives [EMG, Accelerometer] data
             
+                #begin continuous collection of EMG + accel
                 self.emg.start_cont_collect(trial_data)
                 # Trial starts, debounce half a second
                 sleep(.75)
