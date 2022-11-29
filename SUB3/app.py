@@ -56,10 +56,12 @@ def plot_emg(yacc, yemg,v1 = None, v2 = None, h1 = None, duration = None):
 
 def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     
+    #makes log directory in LETREP2 on desktop
     log_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop\\LETREP2\\Logs\\')
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
 
+    #configs a new Run .log file that logging statements can write to
     logging.basicConfig(filename=log_dir+datetime.now().strftime('Run_%Y-%m-%d_%H-%M.log'), level=logging.DEBUG,
                         format='%(asctime)s:%(filename)s:%(levelname)s:%(message)s')
 
@@ -98,6 +100,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     logo_label = Label(root, image=logo, bg="white")
     logo_label.grid(row=0, column=0, padx=padx, pady=pady)
     
+    #patient ID label
     patient_info_lbl = Label(root, text="PatID " + str(options["pat_id"]) + "\nSession #" + str(options["sess"]))
     patient_info_lbl.configure(bg="white", font=large_font)
     patient_info_lbl.grid(row=0, column=1)
@@ -115,6 +118,7 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     def on_other_options():
         show_more_options(options)
 
+    #Updates M1 delay. Needed for baseline.
     def on_stop():
         new_thresh = frame.block.compute_avg_peak()
         messagebox.showinfo(
@@ -189,10 +193,12 @@ def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     df_torque.grid(row=1, column=0)
 
 # success baubles: keep
+    #15x5 ovals inside 600x220 rectangle
     nw = 15
     nh = 5
     success_display = SuccessRecordDisplay(
         display_frame, 600, 220, nw, nh, margin=15, radius=15, start_color=1 if options["display_success"] else 3)
+    
     success_display.grid(row=2, column=0, rowspan=2, columnspan=3)
     success_display.configure(bg=df_bg)
 

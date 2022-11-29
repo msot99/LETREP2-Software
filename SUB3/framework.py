@@ -54,7 +54,8 @@ class framework():
         # Counts blocks and trials
         self.block_count = 1
         self.trial_count = -1
-  
+        #this variable carries the fire point to the truncating code
+        self.fire_point = 0
 
     def exit(self):
         self.running = False
@@ -69,6 +70,7 @@ class framework():
 
     def fire(self, failure, trial_start_time):
 
+        #logged to the 'run' log files, as far as I can tell.
         logging.info("FIRE! "+str( time()-trial_start_time)+ "  Failure:"+str( failure))
         self.mot.fire()
         sleep(1.5)
@@ -92,7 +94,7 @@ class framework():
             if time()-trial_start_time >= 5:
                 return True
 
-             # Check if out of torque limits
+             # Check if out of torque (now EMG) limits
             
             if self.mot.torque_preload_check() != 0:
 
@@ -118,7 +120,7 @@ class framework():
             if time()-random_fire_time > 0:
                 return False
 
-            # Check if out of torque limits
+            # Check if out of torque (EMG) limits
             if self.mot.torque_preload_check() != 0:
                 # Check if out of time for Failure Handler
                 if time()-trial_start_time > 4:
@@ -142,7 +144,7 @@ class framework():
         self.trial_count -= 1
         self.pause_block()
 
-
+    #this fn does preload and trials proper, with failure handling:
     def take_trial(self):
         if self.paused:
            sleep(1) 
@@ -167,8 +169,9 @@ class framework():
                 
                 self.current_trial = trial()
                 trial_start_time = time()
-                trial_data = [[],[]]
+                trial_data = [[],[]] #this array of 2 arrays receives [EMG, Accelerometer] data
             
+                #begin continuous collection of EMG + accel
                 self.emg.start_cont_collect(trial_data)
                 # Trial starts, debounce half a second
                 sleep(.75)
@@ -194,6 +197,9 @@ class framework():
                 if not self.paused:
                     self.current_trial.success = not failure_status
                     self.fire(failure_status, trial_start_time)
+                    self.fire_point = len(trial_data[0]) -1 
+                    #fire point = the current data point at time of firing
+                    #note that self.fire logs to a 'run' log file the time that correlates with this
                 else:
                     self.emg.stop_cont_collect()
 
@@ -237,10 +243,10 @@ class framework():
 
         #Average acc data
         acc_avg = sum(self.current_trial.acc_data[0:500])/500
-
+        """
         for i, smpl in enumerate(self.current_trial.acc_data):
             if len(self.current_trial.acc_data) - 801 > i > 1001 and abs(smpl - acc_avg) > .3:
-                fire_point = i
+                fire_point = i 
                 logging.info("Fire point found at sample number %d" % i)
                 break
         
@@ -248,7 +254,9 @@ class framework():
             logging.warning("Trial has no change in Acc Data. Using middle")
             fire_point = len(self.current_trial.acc_data)/2
             return
-
+        """
+        #we set the fire point when fire() runs instead of the above code!
+        fire_point = self.fire_point
         #Trunkate data
         self.current_trial.acc_data = self.current_trial.acc_data[fire_point -
                                                                     500:fire_point+800]
