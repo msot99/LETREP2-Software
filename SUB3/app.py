@@ -23,8 +23,8 @@ import logging
 # Displays the most recent trial using matplotlib
 def plot_emg(yacc, yemg,v1 = None, v2 = None, h1 = None, duration = None):
 
-    yemg = yemg[400:800]
-    yacc = yacc[400:800]
+    yemg = yemg[400:1600]
+    yacc = yacc[400:1600]
 
     _, ax = plt.subplots()
     
