@@ -73,9 +73,9 @@ class framework():
         #logged to the 'run' log files, as far as I can tell.
         logging.info("FIRE! "+str( time()-trial_start_time)+ "  Failure:"+str( failure))
         self.mot.fire()
-        sleep(1.5)
+        # sleep(1.5)
 
-        self.mot.release()
+        # self.mot.release()
 
     def preload_failure_handler(self, trial_start_time):
         """
@@ -196,8 +196,11 @@ class framework():
 
                 if not self.paused:
                     self.current_trial.success = not failure_status
+                    self.fire_point = len(trial_data[0]) -1
                     self.fire(failure_status, trial_start_time)
-                    self.fire_point = len(trial_data[0]) -1 
+                    #the EMG sample rate is 4370 samples/second
+                    #FireDelay is in nanoseconds, and measures the time between calling the motor and the motor firing
+                    self.fire_point = self.fire_point + int(self.mot.FireDelay*4370/(1000000000))
                     #fire point = the current data point at time of firing
                     #note that self.fire logs to a 'run' log file the time that correlates with this
                 else:
@@ -257,11 +260,11 @@ class framework():
         """
         #we set the fire point when fire() runs instead of the above code!
         fire_point = self.fire_point
-        #Trunkate data
+        #Truncate data
         self.current_trial.acc_data = self.current_trial.acc_data[fire_point -
-                                                                    500:fire_point+800]
+                                                                    500:fire_point+1600]
         self.current_trial.emg_data = self.current_trial.emg_data[fire_point -
-                                                                    500:fire_point+800]
+                                                                    500:fire_point+1600]
 
 
     def new_block(self):
