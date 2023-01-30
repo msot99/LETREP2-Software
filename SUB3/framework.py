@@ -5,14 +5,14 @@ import logging
 import os
 import threading
 from time import sleep, time
-from random import random
+from random import random, randrange
 from tkinter import messagebox
 
 from block import block
 from trial import trial
 from motor import motor
 from emg import emg
-from create_json import JSONmaker
+from create_json import JSONmaker, maxJSON
 import scipy as sp
 from scipy import signal
 import peak
@@ -20,7 +20,7 @@ import peak
 
 
 class framework():
-    def __init__(self, COM, patID=1234, sess=1, blocknum=1, premin=-.06, premax=.04, no_motor = False, no_emg = False):
+    def __init__(self, COM, patID=1234, sess=1, blocknum=0, premin=-.06, premax=.04, no_motor = False, no_emg = False):
         self.preload_max = premax
         self.preload_min = premin
 
@@ -68,11 +68,10 @@ class framework():
         else:
             logging.warn("No EMG, Exiting")
 
-    def fire(self, failure, trial_start_time):
-
+    def fire(self, failure, trial_start_time, speed):
         #logged to the 'run' log files, as far as I can tell.
         logging.info("FIRE! "+str( time()-trial_start_time)+ "  Failure:"+str( failure))
-        self.mot.fire()
+        self.mot.fire(speed)
         # sleep(1.5)
 
         # self.mot.release()
@@ -145,7 +144,7 @@ class framework():
         self.pause_block()
 
     #this fn does preload and trials proper, with failure handling:
-    def take_trial(self):
+    def take_trial(self, speed):
         if self.paused:
            sleep(1) 
         else:
@@ -157,10 +156,11 @@ class framework():
                 logging.info("Missing EMG or Motor, Doing Fake Trial")
                 self.current_trial = trial()
                 trial_start_time = time()
-                sleep(4)
+                self.current_trial.speed=speed
+                sleep(.5)
                 self.finished_trial = True
                 self.block.trials.append(self.current_trial)
-                while(time()-trial_start_time < 10):
+                while(time()-trial_start_time < 1):
                     sleep(.1)
                 return
 
@@ -197,7 +197,8 @@ class framework():
                 if not self.paused:
                     self.current_trial.success = not failure_status
                     self.fire_point = len(trial_data[0]) -1
-                    self.fire(failure_status, trial_start_time)
+                    self.fire(failure_status, trial_start_time, speed)
+                    self.current_trial.speed=speed
                     #the EMG sample rate is 4370 samples/second
                     #FireDelay is in nanoseconds, and measures the time between calling the motor and the motor firing
                     self.fire_point = self.fire_point + int(self.mot.FireDelay*4370/(1000000000))
@@ -280,24 +281,114 @@ class framework():
         self.paused = True
         b = self.block
         logging.info(f"Number of trials in block is {len(b.trials)}")
-        json_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Desktop\\LETREP2\\Data\\{b.patID}\\')
+        # json_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Desktop\\LETREP2\\Data\\{b.patID}\\')
+        json_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Downloads\\LETREP2\\Data\\{b.patID}\\')
         if not os.path.exists(json_dir):
             os.makedirs(json_dir)
-        with open(json_dir+f'Block{b.blocknum}_{b.date[2:]}_{datetime.now().strftime("%H-%M-%S")}.json', "w") as file: 
+        with open(json_dir+f'Session{b.session}_Block{b.blocknum}_{b.date[2:]}_{datetime.now().strftime("%H-%M-%S")}.json', "w") as file: 
             JSONmaker(self.block, file)
         messagebox.showinfo("Block Saved","Block saved to: "
-                 + json_dir+f'Block{b.blocknum}_{b.date[2:]}_{datetime.now().strftime("%H-%M-%S")}.json')
+                 + json_dir+f'Session{b.session}_Block{b.blocknum}_{b.date[2:]}_{datetime.now().strftime("%H-%M-%S")}.json')
         self.new_block()
-        
 
-    def start_block(self):
+    def r_block(self):
+        self.running = False
+        self.paused = True
+        b = self.block
+        logging.info(f"Number of trials in block is {len(b.trials)}")
+        # json_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Desktop\\LETREP2\\Data\\{b.patID}\\')
+        json_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Downloads\\LETREP2\\Data\\{b.patID}\\')
+        if not os.path.exists(json_dir):
+            os.makedirs(json_dir)
+        with open(json_dir+f'R1_Max_{b.date[2:]}_{datetime.now().strftime("%H-%M-%S")}.json', "w") as file: 
+            maxJSON(self.block, file)
+        messagebox.showinfo("Block Saved","Block saved to: "
+                 + json_dir+f'R1_Max_{b.date[2:]}_{datetime.now().strftime("%H-%M-%S")}.json')
+                 
+
+    def r_start(self):
         if self.running == False:
             self.running = True
             self.paused = False
             self.trial_thread = threading.Thread(
-                target=self._data_collection_thread)
+                target=self._r_thread)
             self.trial_thread.start()
 
-    def _data_collection_thread(self):
+    def _r_thread(self):
         while(self.running):
-            self.take_trial()
+            if self.paused:
+                sleep(1) 
+            else:
+                self.trial_count += 1
+                self.starting_trial = True
+
+                if not self.mot or not self.emg:
+                    logging.info("Missing EMG or Motor, Doing Fake Baseline")
+                    self.current_trial = trial()
+                    trial_start_time = time()
+                    emg_max = 1
+                    torque_max = 2
+                    self.block.avg_max_trq = torque_max
+                    self.block.avg_max_emg = emg_max
+                    sleep(3)
+                    #-update box color to blue for complete, then skip to next loop
+                    # baseline_display.set_record(baselineCount -1, 5)
+                    self.finished_trial = True
+                    self.block.trials.append(self.current_trial)
+                    while(time()-trial_start_time < 10):
+                        sleep(.1)
+                    # root.update()
+                    continue
+                    
+                # root.update()
+                #fresh arrays every loop!
+                emg_data = [[],[]]
+                baseTorque = []
+
+                # Tell them to press
+                # general_info_lbl.configure(text="Collect Max")
+
+                #start collecting data from EMG
+                self.emg.start_cont_collect(emg_data)
+                # Trial starts, debounce half a second
+                sleep(.75)
+                #collect torque data to 100 datapoints; EMG will collect in background simultaneously
+                while(len(baseTorque) < 100):
+                    if self.mot.torque_update:
+                        baseTorque.append(self.mot.torque_value)
+                        self.mot.torque_update = False
+                
+
+                #-grab highest data points for this round;
+                emg_max = ((emg_max)*(self.trial_count-1) + max(emg_data[0]))/self.trial_count 
+                torque_max = ((torque_max)*(self.trial_count-1) + max(baseTorque))/self.trial_count
+                #^undoes previous loop average; adds maximum value in new emg array; re-performs average
+                self.block.avg_max_trq = torque_max
+                self.block.avg_max_emg = emg_max
+                sleep(45)
+
+        if self.mot:
+                self.mot.exit()
+        else:
+                logging.warning("No Baseline Motor, past baseline")
+        if self.emg:
+                self.emg.exit()
+        else:
+                logging.warning("No Baseline EMG, Exiting")
+
+    def start_block(self, speed_arr):
+        if self.running == False:
+            self.running = True
+            self.paused = False
+            self.trial_thread = threading.Thread(
+                target=self._data_collection_thread, args=[speed_arr])
+            self.trial_thread.start()
+
+    def _data_collection_thread(self, speed_arr):
+        while(self.running):
+            i=randrange(len(speed_arr))
+            while(speed_arr[i][1]==0):
+                i=(i+51)%(len(speed_arr))
+            speed=speed_arr[i][0]
+            speed_arr[i][1]=(speed_arr[i][1]-1)
+            self.take_trial(speed)

@@ -67,7 +67,12 @@ class motor:
         logging.debug("UART: Disabling Motor")
         self._send_message("d")
 
-    def fire(self):
+    def fire(self,speed):
+
+        # **********************************************************************************************
+        # Needs to be completely changed based on communication :)
+        # **********************************************************************************************
+
         # """
         # Sends fire command to the ESP32 to actuate the clearpath motor to the raised position
         # """
