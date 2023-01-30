@@ -7,7 +7,7 @@ import os
 
 
 from analysis_app import analysis_app
-from research_app import research_app
+from r_device import r_device
 
 def show_main():
     root = Tk()
@@ -25,7 +25,7 @@ def show_main():
 
     def research_button():
         root.destroy()
-        research_app()
+        r_device()
 
     width = 15
     height = 5

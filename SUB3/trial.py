@@ -3,6 +3,7 @@ class trial():
         self.emg_data = []
         self.success = True
         self.peak = 0
+        self.speed = 175
         self.max_delay_ms = 0
         self.failure_reason = "none"
         self.acc_data = []
@@ -18,6 +19,7 @@ class trial():
         self.emg_data = json['emgdata']
         self.success = json['success']
         self.peak = json['peakvalue']
+        self.speed = json['speed']
         self.failure_reason = json['failure-reason']
         self.acc_data = json['accdata']
         self.max_delay_ms = json['maxdelayms']
