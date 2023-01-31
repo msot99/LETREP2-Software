@@ -67,8 +67,8 @@ def r_app(port, pat_id, sess, max_emg, no_motor=False, no_emg=False):
     
 
     #makes log directory in LETREP2 on desktop
-    # log_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop\\LETREP2\\Logs\\')
-    log_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Downloads\\LETREP2\\Logs\\')
+    log_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop\\LETREP2\\Logs\\')
+    # log_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Downloads\\LETREP2\\Logs\\')
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
 
@@ -81,6 +81,8 @@ def r_app(port, pat_id, sess, max_emg, no_motor=False, no_emg=False):
     root.configure(bg="white")
     root.running = True
 
+    if(max_emg==0):
+        max_emg=.5
 
     options = get_default_options()
     # Give defaults for options not set in get_default_options before loading from file

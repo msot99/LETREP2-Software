@@ -26,13 +26,19 @@ class framework():
 
         self.block = block(patID, sess=sess, blocknum=blocknum)
 
+
         if not no_motor:
-            self.mot = motor(COM, self.preload_max, self.preload_min)
-            self.mot.start()
-            # Give motor time to enable
-            sleep(10)
-            logging.info("Done Enabling motor")
+            if not 'self.mot' in globals():
+                print("nope")
+                self.mot = motor(COM, self.preload_max, self.preload_min)
+                self.mot.start()
+                # Give motor time to enable
+                sleep(10)
+                logging.info("Done Enabling motor")
+            else:
+                print("yep")
         else:
+            print("empty mots")
             self.mot = None
         if not no_emg:
             self.emg = emg()
@@ -281,8 +287,8 @@ class framework():
         self.paused = True
         b = self.block
         logging.info(f"Number of trials in block is {len(b.trials)}")
-        # json_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Desktop\\LETREP2\\Data\\{b.patID}\\')
-        json_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Downloads\\LETREP2\\Data\\{b.patID}\\')
+        json_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Desktop\\LETREP2\\Data\\{b.patID}\\')
+        # json_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Downloads\\LETREP2\\Data\\{b.patID}\\')
         if not os.path.exists(json_dir):
             os.makedirs(json_dir)
         with open(json_dir+f'Session{b.session}_Block{b.blocknum}_{b.date[2:]}_{datetime.now().strftime("%H-%M-%S")}.json', "w") as file: 
@@ -296,8 +302,8 @@ class framework():
         self.paused = True
         b = self.block
         logging.info(f"Number of trials in block is {len(b.trials)}")
-        # json_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Desktop\\LETREP2\\Data\\{b.patID}\\')
-        json_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Downloads\\LETREP2\\Data\\{b.patID}\\')
+        json_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Desktop\\LETREP2\\Data\\{b.patID}\\')
+        # json_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Downloads\\LETREP2\\Data\\{b.patID}\\')
         if not os.path.exists(json_dir):
             os.makedirs(json_dir)
         with open(json_dir+f'R1_Max_{b.date[2:]}_{datetime.now().strftime("%H-%M-%S")}.json', "w") as file: 
@@ -342,6 +348,10 @@ class framework():
                     
                 # root.update()
                 #fresh arrays every loop!
+
+                self.current_trial = trial()
+                trial_start_time = time()
+
                 emg_data = [[],[]]
                 baseTorque = []
 
@@ -354,27 +364,32 @@ class framework():
                 sleep(.75)
                 #collect torque data to 100 datapoints; EMG will collect in background simultaneously
                 while(len(baseTorque) < 100):
-                    if self.mot.torque_update:
-                        baseTorque.append(self.mot.torque_value)
-                        self.mot.torque_update = False
+                    baseTorque.append(3)
+                    # if self.mot.torque_update:
+                        # baseTorque.append(self.mot.torque_value)
+                        # self.mot.torque_update = False
                 
-
+                emg_max=0
+                torque_max=0
                 #-grab highest data points for this round;
-                emg_max = ((emg_max)*(self.trial_count-1) + max(emg_data[0]))/self.trial_count 
-                torque_max = ((torque_max)*(self.trial_count-1) + max(baseTorque))/self.trial_count
+                emg_max = ((emg_max)*(self.trial_count) + max(emg_data[0]))/(self.trial_count+1) 
+                torque_max = ((torque_max)*(self.trial_count) + max(baseTorque))/(self.trial_count+1)
                 #^undoes previous loop average; adds maximum value in new emg array; re-performs average
                 self.block.avg_max_trq = torque_max
                 self.block.avg_max_emg = emg_max
-                sleep(45)
+                sleep(5)
 
-        if self.mot:
-                self.mot.exit()
-        else:
-                logging.warning("No Baseline Motor, past baseline")
-        if self.emg:
-                self.emg.exit()
-        else:
-                logging.warning("No Baseline EMG, Exiting")
+                self.finished_trial = True
+                self.block.trials.append(self.current_trial)
+
+        # if self.mot:
+        #         self.mot.exit()
+        # else:
+        #         logging.warning("No Baseline Motor, past baseline")
+        # if self.emg:
+        #         self.emg.exit()
+        # else:
+        #         logging.warning("No Baseline EMG, Exiting")
 
     def start_block(self, speed_arr):
         if self.running == False:
