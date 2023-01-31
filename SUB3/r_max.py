@@ -15,15 +15,15 @@ from r_app import r_app
 
 def r_max(port, pat_id, sess, no_motor=False, no_emg=False):
     
-    log_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop\\LETREP2\\Logs\\')
-    # log_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Downloads\\LETREP2\\Logs\\')
+    # log_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop\\LETREP2\\Logs\\')
+    log_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Downloads\\LETREP2\\Logs\\')
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
 
     logging.basicConfig(filename=log_dir+datetime.now().strftime('Run_%Y-%m-%d_%H-%M.log'), level=logging.DEBUG,
                         format='%(asctime)s:%(filename)s:%(levelname)s:%(message)s')
 
-
+    cease=False
     root = Tk()
     root.configure(bg="white")
     root.running = True
@@ -81,10 +81,10 @@ def r_max(port, pat_id, sess, no_motor=False, no_emg=False):
     def continue_button(event=None):
         frame.r_block()
         max_emg = frame.block.avg_max_emg
-        frame.exit()
+        # frame.exit()
         root.destroy()
-        # no = port == None
-        r_app(port, pat_id, sess, max_emg, no_motor=no, no_emg=no)
+        no = port == None
+        r_app(port, pat_id, sess, max_emg, frame, no_motor=no, no_emg=no)
 
 
     # Button configuration
@@ -231,7 +231,7 @@ def r_max(port, pat_id, sess, no_motor=False, no_emg=False):
                 wav_file = "C:\\Program Files\\LETREP2\\resources\\preload_notification.wav"
                 winsound.PlaySound(wav_file, winsound.SND_FILENAME | winsound.SND_ASYNC)
 
-            df_trial.configure(text="Current Trial: " + str(frame.trial_count+1))
+            df_trial.configure(text="Current Trial: " + str(frame.trial_count))
             #Check if this is a first trial
             if frame.trial_count == 0:
                 options["block_count"] = frame.block_count
@@ -250,23 +250,27 @@ def r_max(port, pat_id, sess, no_motor=False, no_emg=False):
 
         if frame.finished_trial:
     #         # Check if we can do another trial
-            baseline_display.set_record(frame.trial_count, 5)
+            baseline_display.set_record(frame.trial_count-1, 5)
             
-            if frame.trial_count+1 == bw * bh :
+            if frame.trial_count == bw * bh :
                 logging.warning("Trial count meets success display limit... Ending block")
                 frame.r_block()
                 max_emg = frame.block.avg_max_emg
                 root.running = False
-                frame.exit()
+                # frame.exit()
+                root.update()
                 root.destroy()
                 no = port == None
-                r_app(port, pat_id, sess, max_emg, no_motor=no, no_emg=no)
+                r_app(port, pat_id, sess, max_emg, frame, no_motor=no, no_emg=no)
+                cease=True
             
             # Reset trial bit
-            frame.finished_trial = False
-
-        root.update()
-    root.destroy()
+            if(not cease):
+                frame.finished_trial = False
+        if(not cease):
+            root.update()
+    if(not cease):        
+        root.destroy()
 
 
 if __name__ == "__main__":
