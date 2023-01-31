@@ -20,7 +20,7 @@ import peak
 
 
 class framework():
-    def __init__(self, COM, patID=1234, sess=1, blocknum=0, premin=-.06, premax=.04, no_motor = False, no_emg = False):
+    def __init__(self, COM, patID=1234, sess=1, blocknum=-1, premin=-.06, premax=.04, no_motor = False, no_emg = False):
         self.preload_max = premax
         self.preload_min = premin
 
@@ -29,16 +29,14 @@ class framework():
 
         if not no_motor:
             if not 'self.mot' in globals():
-                print("nope")
                 self.mot = motor(COM, self.preload_max, self.preload_min)
                 self.mot.start()
                 # Give motor time to enable
                 sleep(10)
                 logging.info("Done Enabling motor")
             else:
-                print("yep")
+                print("")
         else:
-            print("empty mots")
             self.mot = None
         if not no_emg:
             self.emg = emg()
@@ -275,6 +273,7 @@ class framework():
 
 
     def new_block(self):
+        sleep(5)
         self.block_count+=1
         self.trial_count = -1
         self.block = self.block.copy_block()
@@ -310,8 +309,11 @@ class framework():
             maxJSON(self.block, file)
         messagebox.showinfo("Block Saved","Block saved to: "
                  + json_dir+f'R1_Max_{b.date[2:]}_{datetime.now().strftime("%H-%M-%S")}.json')
+        self.block_count+=1
+        self.trial_count = -1
+        sleep(5)
+        self.block = block(self.block.patID, sess=self.block.session, blocknum=self.block_count)
                  
-
     def r_start(self):
         if self.running == False:
             self.running = True
@@ -381,15 +383,6 @@ class framework():
 
                 self.finished_trial = True
                 self.block.trials.append(self.current_trial)
-
-        # if self.mot:
-        #         self.mot.exit()
-        # else:
-        #         logging.warning("No Baseline Motor, past baseline")
-        # if self.emg:
-        #         self.emg.exit()
-        # else:
-        #         logging.warning("No Baseline EMG, Exiting")
 
     def start_block(self, speed_arr):
         if self.running == False:

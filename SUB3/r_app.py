@@ -53,7 +53,7 @@ def plot_emg(yacc, yemg,v1 = None, v2 = None, h1 = None, duration = None):
         plt.show(block= True)
 
 
-def r_app(port, pat_id, sess, max_emg, no_motor=False, no_emg=False):
+def r_app(port, pat_id, sess, max_emg, framepass, no_motor=False, no_emg=False):
     
     speed_arr_even = [[0 for i in range(2)] for j in range(22)]
     speed_arr_odd = [[0 for i in range(2)] for j in range(22)]
@@ -102,7 +102,7 @@ def r_app(port, pat_id, sess, max_emg, no_motor=False, no_emg=False):
         }
     )
 
-    frame = None
+    frame = framepass
 
     def on_closing():
         root.running = False
@@ -122,6 +122,7 @@ def r_app(port, pat_id, sess, max_emg, no_motor=False, no_emg=False):
 
     # Start, Pause, Trash, Stop, and Other button functions
     def on_start():
+        options["updates"] = True
         if(frame.block_count%2):
             frame.start_block(speed_arr_even)
         else:
@@ -254,9 +255,11 @@ def r_app(port, pat_id, sess, max_emg, no_motor=False, no_emg=False):
 
     # End gui
 
-    # To launch with no_motor and no_emg, run sign_in.py and hold shift while you press continue
-    frame = framework(port, patID=options["pat_id"], sess=options["sess"],
-                      premin=options["pre_min"], premax=options["pre_max"], no_motor=no_motor, no_emg=no_emg)
+    # # To launch with no_motor and no_emg, run sign_in.py and hold shift while you press continue
+    # frame = framework(port, patID=options["pat_id"], sess=options["sess"],
+    #                   premin=options["pre_min"], premax=options["pre_max"], no_motor=no_motor, no_emg=no_emg)
+    # frame.block_count = 1
+    # frame.trial_count = -1
     max = []
     center_window(root)
     while root.running:
