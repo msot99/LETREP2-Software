@@ -286,8 +286,8 @@ class framework():
         self.paused = True
         b = self.block
         logging.info(f"Number of trials in block is {len(b.trials)}")
-        json_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Desktop\\LETREP2\\Data\\{b.patID}\\')
-        # json_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Downloads\\LETREP2\\Data\\{b.patID}\\')
+        # json_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Desktop\\LETREP2\\Data\\{b.patID}\\')
+        json_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Downloads\\LETREP2\\Data\\{b.patID}\\')
         if not os.path.exists(json_dir):
             os.makedirs(json_dir)
         with open(json_dir+f'Session{b.session}_Block{b.blocknum}_{b.date[2:]}_{datetime.now().strftime("%H-%M-%S")}.json', "w") as file: 
@@ -301,8 +301,8 @@ class framework():
         self.paused = True
         b = self.block
         logging.info(f"Number of trials in block is {len(b.trials)}")
-        json_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Desktop\\LETREP2\\Data\\{b.patID}\\')
-        # json_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Downloads\\LETREP2\\Data\\{b.patID}\\')
+        # json_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Desktop\\LETREP2\\Data\\{b.patID}\\')
+        json_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Downloads\\LETREP2\\Data\\{b.patID}\\')
         if not os.path.exists(json_dir):
             os.makedirs(json_dir)
         with open(json_dir+f'R1_Max_{b.date[2:]}_{datetime.now().strftime("%H-%M-%S")}.json', "w") as file: 
