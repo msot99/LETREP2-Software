@@ -15,8 +15,8 @@ from r_app import r_app
 
 def r_max(port, pat_id, sess, no_motor=False, no_emg=False):
     
-    log_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop\\LETREP2\\Logs\\')
-    # log_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Downloads\\LETREP2\\Logs\\')
+    # log_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop\\LETREP2\\Logs\\')
+    log_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Downloads\\LETREP2\\Logs\\')
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
 
@@ -81,10 +81,10 @@ def r_max(port, pat_id, sess, no_motor=False, no_emg=False):
     def continue_button(event=None):
         frame.r_block()
         max_emg = frame.block.avg_max_emg
-        frame.exit()
+        # frame.exit()
         root.destroy()
-        # no = port == None
-        r_app(port, pat_id, sess, max_emg, no_motor=no, no_emg=no)
+        no = port == None
+        r_app(port, pat_id, sess, max_emg, frame, no_motor=no, no_emg=no)
 
 
     # Button configuration
@@ -257,10 +257,10 @@ def r_max(port, pat_id, sess, no_motor=False, no_emg=False):
                 frame.r_block()
                 max_emg = frame.block.avg_max_emg
                 root.running = False
-                frame.exit()
+                # frame.exit()
                 root.destroy()
                 no = port == None
-                r_app(port, pat_id, sess, max_emg, no_motor=no, no_emg=no)
+                r_app(port, pat_id, sess, max_emg, frame, no_motor=no, no_emg=no)
             
             # Reset trial bit
             frame.finished_trial = False
