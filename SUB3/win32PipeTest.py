@@ -2,6 +2,7 @@
 import time
 import sys
 import win32pipe, win32file, pywintypes
+import struct
 
 
 def pipe_server():
@@ -9,7 +10,7 @@ def pipe_server():
     count = 0
     #C++ client example reads from Foo; this writes to Foo
     pipe = win32pipe.CreateNamedPipe(
-        r'\\.\pipe\Foo',
+        r'\\.\\pipe\\Foo',
         win32pipe.PIPE_ACCESS_DUPLEX,
         win32pipe.PIPE_TYPE_MESSAGE | win32pipe.PIPE_READMODE_MESSAGE | win32pipe.PIPE_WAIT,
         1, 65536, 65536,
@@ -22,15 +23,24 @@ def pipe_server():
 
         while count < 10:
             print(f"writing message {count}")
-            # convert to bytes
-            some_data = str.encode(f"{count}")
-            win32file.WriteFile(pipe, some_data)
+            send_message(pipe, count)
             time.sleep(1)
             count += 1
 
         print("finished now")
     finally:
         win32file.CloseHandle(pipe)
+
+def send_message(pipe, words):
+    # convert to bytes and write string to pipe
+    #some_data = str.encode(f"{words}") #encodes variable words into an fstring, didn't help
+    #other_data = bytes(chr(words).encode('utf-8')) #didn't help us
+    #chop num into digits
+    some_data = struct.pack('P', words) #encodes to ascii bytes C can read (7 is a bell sound!!!!!!!!!!!)
+    win32file.WriteFile(pipe, some_data)
+
+
+
 
 
 def pipe_client():
@@ -42,19 +52,25 @@ def pipe_client():
             #C++ server writes to Fan
             #this reads from Fan
             handle = win32file.CreateFile(
-                r'\\.\pipe\Fan',
-                win32file.GENERIC_READ | win32file.GENERIC_WRITE,
+                r'\\.\\pipe\\Fan',
+                win32file.GENERIC_READ,
                 0,
                 None,
                 win32file.OPEN_EXISTING,
                 0,
                 None
             )
-            res = win32pipe.SetNamedPipeHandleState(handle, win32pipe.PIPE_READMODE_MESSAGE, None, None)
+            print("res time")
+            res = 1 #win32pipe.SetNamedPipeHandleState(handle, win32pipe.PIPE_READMODE_BYTE, None, None)
+            #if the above function is called while interacting with C, the function hangs!
+            #this is because the C side makes a ONE WAY pipe, which python does not have permission to edit.
+            #solution: make it correctly on the C side.
+            print("res done")
+            #PIPE_READMODE_MESSAGE OR PIPE_READMODE_BYTE^
             if res == 0:
                 print(f"SetNamedPipeHandleState return code: {res}")
             while True:
-                resp = win32file.ReadFile(handle, 64*1024)
+                resp = win32file.ReadFile(handle, 64*1024)[1].decode('ascii')
                 print(f"message: {resp}")
         except pywintypes.error as e:
             if e.args[0] == 2:

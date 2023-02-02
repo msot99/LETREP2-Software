@@ -178,7 +178,7 @@ class framework():
                 #begin continuous collection of EMG + accel
                 self.emg.start_cont_collect(trial_data)
                 # Trial starts, debounce half a second
-                sleep(.75)
+                sleep(1.25)
                 #Send the motor the emg array
                 self.mot.update_pre_emg(trial_data[0]) 
 
@@ -265,11 +265,14 @@ class framework():
         """
         #we set the fire point when fire() runs instead of the above code!
         fire_point = self.fire_point
+        print("Fire point: ", fire_point)
         #Truncate data
         self.current_trial.acc_data = self.current_trial.acc_data[fire_point -
                                                                     500:fire_point+1600]
         self.current_trial.emg_data = self.current_trial.emg_data[fire_point -
                                                                     500:fire_point+1600]
+        # self.current_trial.acc_data = self.current_trial.acc_data[-3000:]
+        # self.current_trial.emg_data = self.current_trial.emg_data[-3000:]
 
 
     def new_block(self):
@@ -366,10 +369,10 @@ class framework():
                 sleep(.75)
                 #collect torque data to 100 datapoints; EMG will collect in background simultaneously
                 while(len(baseTorque) < 100):
-                    baseTorque.append(3)
-                    # if self.mot.torque_update:
-                        # baseTorque.append(self.mot.torque_value)
-                        # self.mot.torque_update = False
+                    self.mot._read_msgs_from_esp()
+                    if self.mot.torque_update:
+                        baseTorque.append(self.mot.torque_value)
+                        self.mot.torque_update = False
                 
                 emg_max=0
                 torque_max=0
