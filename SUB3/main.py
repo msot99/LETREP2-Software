@@ -10,6 +10,7 @@ from analysis_app import analysis_app
 from r_device import r_device
 
 def show_main():
+    
     root = Tk()
     root.configure(bg="white")
 

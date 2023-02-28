@@ -9,7 +9,7 @@ class block():
         self.blocknum = blocknum
         self.trials = list()
         self.avg_max_trq = 0
-        self.avg_max_emg = 0
+        self.avg_max_emg = 7
     
     def obj_from_json(self, json):
         self.patID = json['info']['patID']
