@@ -10,10 +10,12 @@ def JSONTrialMaker(trialobject: trial, file):
     jdict = {
         "trial":
                 {"speed": trialobject.speed,
+                "measured_speed": trialobject.foot_speed,
                 "success": trialobject.success,
                 "failure-reason": trialobject.failure_reason,
                 "peakvalue": trialobject.peak,
                 "maxdelayms": trialobject.max_delay_ms,
+                "emgoffset": trialobject.emg_offset,
                 "emgdata": trialobject.emg_data,
                  "accdata": trialobject.acc_data
                 }
@@ -47,10 +49,12 @@ def JSONmaker(blockobject: block, file):
 
         jdict["block"]["trials"].update({f"trial{i}":
                                             {"speed": t.speed,
+                                            "measured_speed": t.foot_speed,
                                             "success": t.success,
                                             "failure-reason": t.failure_reason,
                                             "peakvalue": t.peak,
                                             "maxdelayms": t.max_delay_ms,
+                                            "emgoffset": t.emg_offset,
                                             "emgdata": t.emg_data,
                                             "accdata": t.acc_data
                                             }

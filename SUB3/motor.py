@@ -31,6 +31,7 @@ class motor:
 
         # Fire delay for framework fire point calculations
         self.FireDelay = 0
+        self.FootSpeed = 0
 
         # Ack timeout in seconds
         self._ack_timeout = .4
@@ -148,7 +149,7 @@ class motor:
         #the EMG sample rate is 4370 samples/second
         #FireDelay is in nanoseconds, and measures the time between calling the motor and the motor firing
         #self.fire_point = self.fire_point + FireDelay*4370/(1000000000)
-        sendSpeed=int(((speed-85)/10)+5)
+        sendSpeed=int(((speed-85)/10)+6)
 
         TimeCall = time.time_ns()
         print("TimeCall: ", TimeCall)
@@ -161,6 +162,13 @@ class motor:
         pipeTime = win32file.ReadFile(self.fromCpp, 64*1024)[1].decode('utf-16')
         TimeFire = int(pipeTime)
         print("TimeFire: ", TimeFire)
+
+        #receive pipe duration, store as FireDuration
+        pipeDuration = win32file.ReadFile(self.fromCpp, 64*1024)[1].decode('utf-16')
+        FireDuration = float(pipeDuration)
+        print("FireDuration: ", pipeDuration)
+        self.FootSpeed = 6000/FireDuration
+        print("FootSpeed: ", self.FootSpeed)
         ##########################################################################################
         self.FireDelay = int(TimeFire)-int(TimeCall)
         print("Delay: ", self.FireDelay)
@@ -250,7 +258,9 @@ class motor:
         Returens -1 if force is less than preload_min
         """
         #checks emg val instead now
-        self._display_emgV = self._preload_emgV[-1] #because app doesn't like list[-1]
+        #self._display_emgV = self._preload_emgV[-1] #because app.py doesn't like to call list[-1]
+        self._display_emgV = sum(self._preload_emgV[-100:])/100.0 #sasaki wants a rolling avg because it flickery
+        self.torque_update=True
         if self._preload_emgV[-1] < self._preload_max:
             return 1
         elif self._preload_emgV[-1] > self._preload_min:

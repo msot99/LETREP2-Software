@@ -47,18 +47,23 @@ class PreloadDisplay(Canvas):
         y = self._image_height / 2 - self._r * math.sin(theta)
         h = self._image_height / self._image_width * w
         self.coords(id, self.width / 2, y + self.height / 2 - self._image_height / 2)
+        #half self.height minus half self.image_height should put the good/bad marker in a properly centered location
+        #y further alters this to appropriate location for preload
+        #self width/2 centers in the x direction
         image = ImageTk.PhotoImage(image.resize((int(w), int(h)), Image.ANTIALIAS))
         self.itemconfigure(id, image=image)
+        #resize the image and configure
         return image
 
 
     def update_data(self, torque):
+        #currently taking an emg value in 'torque'
         z = (torque - self.preload_min) / (self.preload_max - self.preload_min)
         theta = -self._thetamax * math.atan(self._a * z)
         self._high_placeholder = self._update_position(self._high, theta + self._thetamax, self.high_image)
         self._low_placeholder  = self._update_position(self._good, theta, self.good_image)
         self._good_placeholder = self._update_position(self._low,  theta - self._thetamax, self.low_image)
-
+        # print(z)
         if z > 1:
             self.tag_raise(self._high)
             self.itemconfigure(self._bg, fill="#ec1c24")

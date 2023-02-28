@@ -55,10 +55,10 @@ def plot_emg(yacc, yemg,v1 = None, v2 = None, h1 = None, duration = None):
 
 def r_app(port, pat_id, sess, max_emg, framepass, no_motor=False, no_emg=False):
     
-    speed_arr_even = [[0 for i in range(2)] for j in range(22)]
-    speed_arr_odd = [[0 for i in range(2)] for j in range(22)]
+    speed_arr_even = [[0 for i in range(2)] for j in range(20)]
+    speed_arr_odd = [[0 for i in range(2)] for j in range(20)]
 
-    for i in range(0,22):
+    for i in range(0,20):
         speed_arr_even [i][0] = 85+(i*10)
         speed_arr_even [i][1] = 2+(i%2)
         speed_arr_odd [i][0] = 85+(i*10)
@@ -67,8 +67,8 @@ def r_app(port, pat_id, sess, max_emg, framepass, no_motor=False, no_emg=False):
     
 
     #makes log directory in LETREP2 on desktop
-    # log_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop\\LETREP2\\Logs\\')
-    log_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Downloads\\LETREP2\\Logs\\')
+    log_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop\\LETREP23\\Logs\\')
+    # log_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Downloads\\LETREP2\\Logs\\')
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
 
@@ -97,8 +97,8 @@ def r_app(port, pat_id, sess, max_emg, framepass, no_motor=False, no_emg=False):
             "pat_id": pat_id, 
             "sess": sess, 
             "display_success": False if sess in [1,2,3] else True,
-            "pre_max": max_emg*.95,
-            "pre_min": max_emg*.85
+            "pre_max": max_emg*.20,
+            "pre_min": max_emg*.05
         }
     )
 
@@ -123,6 +123,10 @@ def r_app(port, pat_id, sess, max_emg, framepass, no_motor=False, no_emg=False):
     # Start, Pause, Trash, Stop, and Other button functions
     def on_start():
         options["updates"] = True
+        for i in range(0,20):
+            speed_arr_even [i][1] = 2+(i%2)
+            speed_arr_odd [i][1] = 3-(i%2)
+
         if(frame.block_count%2):
             frame.start_block(speed_arr_even)
         else:
@@ -213,7 +217,7 @@ def r_app(port, pat_id, sess, max_emg, framepass, no_motor=False, no_emg=False):
 
 # success baubles: keep
     #11x5 ovals inside 600x220 rectangle
-    nw = 11
+    nw = 10
     nh = 5
     success_display = SuccessRecordDisplay(
         display_frame, 600, 220, nw, nh, margin=15, radius=15, start_color=1 if options["display_success"] else 3)
@@ -231,6 +235,7 @@ def r_app(port, pat_id, sess, max_emg, framepass, no_motor=False, no_emg=False):
 
     m1baseline = 1.5
     m1_display = M1Display(display_frame, 100, 200, max=options["m1_max"], min=options["m1_min"], threshold=options["m1_thresh"], baseline=m1baseline, bg=df_bg)
+
 
     def show_preload_display():
         m1_display.grid_forget()
@@ -266,7 +271,8 @@ def r_app(port, pat_id, sess, max_emg, framepass, no_motor=False, no_emg=False):
         # Update preload display
         if frame.mot:
             if frame.mot.torque_update:
-                torque_value = frame.mot._display_emgV       #grabs emg from motor object
+                torque_value = frame.mot._display_emgV #grabs emg from motor object
+                #it is a rolling average of the last 20 emg values
                 frame.mot.torque_update = False
                 preload_display.update_data(torque_value)
                 

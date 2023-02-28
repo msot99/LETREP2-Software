@@ -161,6 +161,7 @@ class framework():
                 self.current_trial = trial()
                 trial_start_time = time()
                 self.current_trial.speed=speed
+                self.current_trial.foot_speed = speed
                 sleep(.5)
                 self.finished_trial = True
                 self.block.trials.append(self.current_trial)
@@ -203,9 +204,11 @@ class framework():
                     self.fire_point = len(trial_data[0]) -1
                     self.fire(failure_status, trial_start_time, speed)
                     self.current_trial.speed=speed
+                    self.current_trial.foot_speed = self.mot.FootSpeed
                     #the EMG sample rate is 4370 samples/second
                     #FireDelay is in nanoseconds, and measures the time between calling the motor and the motor firing
                     self.fire_point = self.fire_point + int(self.mot.FireDelay*4370/(1000000000))
+                    
                     #fire point = the current data point at time of firing
                     #note that self.fire logs to a 'run' log file the time that correlates with this
                 else:
@@ -215,11 +218,13 @@ class framework():
                     self.trial_count-=1
                     return
 
+                sleep(.8)
                 self.emg.stop_cont_collect()
             
                 # Save data to trial
                 self.current_trial.emg_data = trial_data[0]
                 self.current_trial.acc_data = trial_data[1]
+                self.current_trial.emg_offset = sum(self.current_trial.emg_data[0:400])/400
 
                 # Process the data
                 self.truncate_data()
@@ -250,8 +255,9 @@ class framework():
     def truncate_data(self):
 
         #Average acc data
-        acc_avg = sum(self.current_trial.acc_data[0:500])/500
         """
+        acc_avg = sum(self.current_trial.acc_data[0:500])/500
+        
         for i, smpl in enumerate(self.current_trial.acc_data):
             if len(self.current_trial.acc_data) - 801 > i > 1001 and abs(smpl - acc_avg) > .3:
                 fire_point = i 
@@ -266,13 +272,11 @@ class framework():
         #we set the fire point when fire() runs instead of the above code!
         fire_point = self.fire_point
         print("Fire point: ", fire_point)
-        #Truncate data
+        # #Truncate data
         self.current_trial.acc_data = self.current_trial.acc_data[fire_point -
                                                                     500:fire_point+1600]
         self.current_trial.emg_data = self.current_trial.emg_data[fire_point -
                                                                     500:fire_point+1600]
-        # self.current_trial.acc_data = self.current_trial.acc_data[-3000:]
-        # self.current_trial.emg_data = self.current_trial.emg_data[-3000:]
 
 
     def new_block(self):
@@ -289,8 +293,8 @@ class framework():
         self.paused = True
         b = self.block
         logging.info(f"Number of trials in block is {len(b.trials)}")
-        # json_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Desktop\\LETREP2\\Data\\{b.patID}\\')
-        json_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Downloads\\LETREP2\\Data\\{b.patID}\\')
+        json_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Desktop\\LETREP23\\Data\\{b.patID}\\')
+        # json_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Downloads\\LETREP2\\Data\\{b.patID}\\')
         if not os.path.exists(json_dir):
             os.makedirs(json_dir)
         with open(json_dir+f'Session{b.session}_Block{b.blocknum}_{b.date[2:]}_{datetime.now().strftime("%H-%M-%S")}.json', "w") as file: 
@@ -304,8 +308,8 @@ class framework():
         self.paused = True
         b = self.block
         logging.info(f"Number of trials in block is {len(b.trials)}")
-        # json_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Desktop\\LETREP2\\Data\\{b.patID}\\')
-        json_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Downloads\\LETREP2\\Data\\{b.patID}\\')
+        json_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Desktop\\LETREP23\\Data\\{b.patID}\\')
+        # json_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), f'Downloads\\LETREP2\\Data\\{b.patID}\\')
         if not os.path.exists(json_dir):
             os.makedirs(json_dir)
         with open(json_dir+f'R1_Max_{b.date[2:]}_{datetime.now().strftime("%H-%M-%S")}.json', "w") as file: 
@@ -326,6 +330,8 @@ class framework():
             self.trial_thread.start()
 
     def _r_thread(self):
+        emg_max=0
+        torque_max=0
         while(self.running):
             if self.paused:
                 sleep(1) 
@@ -371,13 +377,22 @@ class framework():
                 while(len(baseTorque) < 100):
                     self.mot._read_msgs_from_esp()
                     if self.mot.torque_update:
+                        if(self.mot.torque_value<0):
+                            self.mot.torque_value=self.mot.torque_value*-1
                         baseTorque.append(self.mot.torque_value)
+                        print(self.mot.torque_value)
                         self.mot.torque_update = False
                 
-                emg_max=0
-                torque_max=0
+                # emg_max=0
+                # torque_max=0
                 #-grab highest data points for this round;
-                emg_max = ((emg_max)*(self.trial_count) + max(emg_data[0]))/(self.trial_count+1) 
+                emg_max_point = emg_data[0].index(max(emg_data[0]))
+                emg_bucket = 0
+                for i in range((emg_max_point -20), (emg_max_point)):
+                    emg_bucket = emg_bucket + emg_data[0][i]
+                emg_average = emg_bucket/21
+                
+                emg_max = ((emg_max)*(self.trial_count) + emg_average)/(self.trial_count+1) 
                 torque_max = ((torque_max)*(self.trial_count) + max(baseTorque))/(self.trial_count+1)
                 #^undoes previous loop average; adds maximum value in new emg array; re-performs average
                 self.block.avg_max_trq = torque_max
@@ -400,6 +415,8 @@ class framework():
             i=randrange(len(speed_arr))
             while(speed_arr[i][1]==0):
                 i=(i+51)%(len(speed_arr))
+                print("SpeedCom: ", i)
             speed=speed_arr[i][0]
+            print("SpeedComActual: ", speed)
             speed_arr[i][1]=(speed_arr[i][1]-1)
             self.take_trial(speed)

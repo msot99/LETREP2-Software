@@ -115,7 +115,7 @@ def plot_emg(yacc, yemg,v1 = None, v2 = None, h1 = None, duration = None):
 #notably: different box and oval displays; added EMG MAX collection; added skip button
 def show_app(port, pat_id, sess, no_motor=False, no_emg=False):
     
-    log_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop\\LETREP2\\Logs\\')
+    log_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop\\LETREP23\\Logs\\')
     # log_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Downloads\\LETREP2\\Logs\\')
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
