@@ -65,7 +65,7 @@ def r_max(port, pat_id, sess, no_motor=False, no_emg=False):
 
     # Start, Pause, Trash, Stop, and Other button functions
     def r_start():
-        frame.r_start()
+        frame.r_start() #***
 
     # paused = False
     def on_pause():
@@ -86,7 +86,7 @@ def r_max(port, pat_id, sess, no_motor=False, no_emg=False):
         # frame.exit()
         root.destroy()
         no = port == None
-        r_app(port, pat_id, sess, max_emg, frame, no_motor=no, no_emg=no)
+        app(port, pat_id, sess, max_emg, frame, no_motor=no, no_emg=no)
 
 
     # Button configuration
@@ -279,7 +279,7 @@ def r_max(port, pat_id, sess, no_motor=False, no_emg=False):
 
 if __name__ == "__main__":
 
-    r_max(None, 1234, 1, no_motor=True, no_emg=True)
+    max(None, 1234, 1, no_motor=True, no_emg=True)
 
 
 
