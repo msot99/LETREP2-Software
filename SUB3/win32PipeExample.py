@@ -3,6 +3,9 @@ import time
 import sys
 import win32pipe, win32file, pywintypes
 
+#This is an example pipe file! 
+# It is not integral to the project, but it's a good test for communication between python and C++
+#(or any other programming language which can use windows pipes)
 
 def pipe_server():
     print("pipe server")
