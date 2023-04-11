@@ -15,7 +15,7 @@ def sign_in(port):
         sess = sess_choice.get()
         root.destroy()
         no = port == None
-        show_app(port, id, sess, no_motor=no, no_emg=no)
+        max(port, id, sess, no_motor=no, no_emg=no)
 
     img = Image.open(logo_dir)
     img = img.resize((250, 250), Image.ANTIALIAS)

@@ -272,7 +272,7 @@ def r_app(port, pat_id, sess, max_emg, framepass, no_motor=False, no_emg=False):
         if frame.mot:
             if frame.mot.torque_update:
                 torque_value = frame.mot._display_emgV #grabs emg from motor object
-                #it is a rolling average of the last 20 emg values
+                #it is a rolling average of the last x emg values
                 frame.mot.torque_update = False
                 preload_display.update_data(torque_value)
                 
