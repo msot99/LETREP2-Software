@@ -301,9 +301,11 @@ def r_app(port, pat_id, sess, max_emg, framepass, no_motor=False, no_emg=False):
         if frame.mot:
             #if motor exists
             if frame.mot.torque_update:
+
                 #and there is new torque (currently new EMG)
                 torque_value = frame.mot._display_emgV #grabs 'torque' (emg) from motor object
                 #it is a rolling average of the last 20 emg values for smoothness
+
                 frame.mot.torque_update = False
                 preload_display.update_data(torque_value) #update display for current 'torque'
                 
